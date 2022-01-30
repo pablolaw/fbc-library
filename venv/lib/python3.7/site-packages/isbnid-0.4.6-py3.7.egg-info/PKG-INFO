@@ -1,0 +1,19 @@
+Metadata-Version: 1.1
+Name: isbnid
+Version: 0.4.6
+Summary: Python ISBN ids
+Home-page: https://gitlab.com/nekobcn/isbnid
+Author: ISBNid GitHub
+Author-email: pdfnorm@gmx.com
+License: GPL
+Description: UNKNOWN
+Keywords: ISBN
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Education
+Classifier: License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Classifier: Topic :: Text Processing :: Indexing

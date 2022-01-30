@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block head %}
+	{{ super() }}
+	<style type="text/css">
+
+		#bookTitle {
+			font-family: 'Barlow', sans-serif; 
+			color: black; 
+			font-size: 17px; 
+			letter-spacing: 0.1em;
+		}
+
+		#bookAuthor {
+			font-family: 'Barlow', sans-serif; 
+			color: black; 
+			font-size: 16px;
+		}
+
+		#bookInfo {
+			font-family: 'Noto Sans', sans-serif; 
+			color: black; 
+			font-size: 13px; 
+			letter-spacing: 0.1em; 
+			margin-top: 4px; 
+			margin-bottom: 4px;
+		}
+
+		#bookCategory {
+			font-family: 'Noto Sans', sans-serif; 
+			color: black; 
+			font-size: 13px; 
+			letter-spacing: 0.1em;
+		}
+
+		#bookStatus {
+			margin-top: 23px;
+			font-family: 'Noto Sans', sans-serif; 
+			font-size: 13px; 
+			letter-spacing: 0.1em;
+		}
+
+		.panel-heading {
+			font-family: 'Noto Sans', sans-serif; 
+			color: black; 
+			font-size: 13px; 
+			letter-spacing: 0.1em;
+		}
+
+		.book_status_shelf {
+			border-left: 5px green solid; 
+			padding-left: 15px;
+		}
+
+		.book_status_missing {
+			border-left: 5px #b30000 solid; 
+			padding-left: 15px;
+		}
+
+		.book_status_loan {
+			border-left: 5px grey solid; 
+			padding-left: 15px;
+		}
+
+	</style>
+{% endblock %}
+
+{% block app_content %}
+	<div style="margin-bottom: 10px; margin-left: -2em">
+		<div id="headerTitle"> SEARCH COLLECTION </div>
+		<div id="headerSubtitle">{{ search_type.upper() }} SEARCH: {{ search_query }}</div>
+		<div id="headerSubtitle">{{ num_books }} BOOK(S) FOUND IN COLLECTION</div>
+	</div>
+
+	{% if g.search_form %}
+		{% include '_searchbar.html' %}
+	{% endif %}
+
+<!-- 	<div class="container"> -->
+	{% for book in books %}
+		{% include '_bookentry.html' %}
+	{% endfor %}
+<!-- 	</div> -->
+
+	<nav aria-label="...">
+        <ul class="pager btn-flat">
+            <li class="previous{% if not prev_url %} disabled{% endif %}">
+                <a href="{{ prev_url or '#' }}">
+                    <span aria-hidden="true">&larr;</span> PREVIOUS BOOKS
+                </a>
+            </li>
+            <li class="next{% if not next_url %} disabled{% endif %}">
+                <a href="{{ next_url or '#' }}">
+                    MORE BOOKS <span aria-hidden="true">&rarr;</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+{% endblock %}

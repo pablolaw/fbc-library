@@ -1,0 +1,169 @@
+
+input {
+	margin-top: 0;
+	margin-right: 0;
+	margin-left: 0;
+}
+
+a {
+	color: #003d99;
+}
+
+#logo {
+	margin-top: 20px; 
+	padding-right: 20px; 
+	border-right: 3px grey solid;
+}
+
+#logout-btn {
+	margin-top: 10px; 
+	margin-left: 20px;
+}
+
+#headerTitle {
+	font-family: 'Montserrat', sans-serif; 
+	color: black; 
+	font-size: 40px; 
+	font-weight: 700;
+}
+
+#headerSubtitle {
+	font-family: 'Noto Sans', sans-serif; 
+	color: black; 
+	font-size: 14px; 
+	margin-top: -5px;
+	margin-bottom: 5px; 
+	letter-spacing: 0.1em;
+}
+
+#submit {
+	background-color: white;
+	border-color: black;
+	font-family: 'Barlow', sans-serif;
+	color: black;
+	letter-spacing: 0.05em;
+}
+
+#submit:hover {
+	background-color: #d1d1d1;
+}
+
+.form_label {
+	font-family: 'Barlow', sans-serif;
+	color: black;
+	letter-spacing: 0.05em;
+}
+
+
+.nav-btn-text {
+	font-family: 'Montserrat', sans-serif; 
+	color: black; 
+	font-size: 15px; 
+	letter-spacing: 0.1em;
+}
+
+
+.btn-flat {
+	background-color: white;
+	border-color: black;
+	font-family: 'Barlow', sans-serif;
+	color: black;
+	letter-spacing: 0.05em;
+}
+
+.btn-flat:hover {
+	background-color: #d1d1d1;
+}
+
+.form-label {
+	font-family: 'Noto Sans', sans-serif; 
+	color: black; 
+	font-size: 14px; 
+	letter-spacing: 0.1em;
+}
+
+.form-control-static {
+	font-family: 'Barlow', sans-serif; 
+	color: black; 
+	font-size: 16px;
+}
+
+.action-header {
+	font-family: 'Montserrat', sans-serif; 
+	color: black; 
+	font-size: 20px; 
+	font-weight: 700;
+	margin-left: 10px;
+}
+
+#modalHeader {
+	font-family: 'Montserrat', sans-serif; 
+	color: black; 
+	font-size: 30px; 
+	font-weight: 700;
+}
+
+#modalSubtitle {
+	font-family: 'Noto Sans', sans-serif; 
+	color: black; 
+	font-size: 12px; 
+	margin-top: -5px;
+	margin-bottom: 5px; 
+	letter-spacing: 0.1em;
+}
+
+.modal {
+  text-align: center;
+}
+
+@media screen and (min-width: 768px) { 
+  .modal:before {
+    display: inline-block;
+    vertical-align: middle;
+    content: " ";
+    height: 100%;
+  }
+}
+
+.modal-dialog {
+  display: inline-block;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.strike {
+    display: block;
+    text-align: center;
+    overflow: hidden;
+    white-space: nowrap;
+    margin-top: 10px;
+    margin-bottom: 10px; 
+}
+
+.strike > span {
+    position: relative;
+    display: inline-block;
+    font-family: 'Noto Sans', sans-serif;
+    letter-spacing: 0.1em; 
+    color: #ada9a8;
+}
+
+.strike > span:before,
+.strike > span:after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 9999px;
+    height: 1px;
+    background: #ada9a8;
+}
+
+.strike > span:before {
+    right: 100%;
+    margin-right: 15px;
+}
+
+.strike > span:after {
+    left: 100%;
+    margin-left: 15px;
+}

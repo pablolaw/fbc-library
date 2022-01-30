@@ -1,0 +1,108 @@
+<div class="modal" id="enter-modal" tabindex="-1" role="dialog" aria-labelledby="enter-modal">
+		<div class="modal-dialog modal-lg" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+        				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        				<div id="modalHeader" class="modal-title">YOU'RE ALMOST THERE...</div>
+        				<div id="modalSubtitle" class="modal-title">Verify filled fields and enter information for the missing ones</div>
+      			</div>
+
+
+      			<form class="form form-horizontal" method="post" action="{{ url_for('add_to_collection') }}">
+      				{{ g.enterForm.hidden_tag() }}
+      				<div class="modal-body">
+
+      					<div class="row col-xs-offset-2">
+
+	      					<div id="cover_container" class="col-lg-3">
+	      					</div>
+
+	      					<div class="col-lg-9">
+
+	      						<div class="form-group">
+		      						<label for="isbn_10" class="form-label col-sm-3 control-label">ISBN-10</label>
+		      						<div class="col-sm-6">
+				    					{{ g.enterForm.isbn_10(class='form-control') }}
+				    					{% for error in g.enterForm.isbn_10.errors %}
+											<span style="color: red;">[{{ error }}]</span>
+										{% endfor %}
+				    				</div>
+		      					</div>
+
+		      					<div class="form-group">
+		      						<label for="isbn_13" class="form-label col-sm-3 control-label">ISBN-13</label>
+		      						<div class="col-sm-6">
+				    					{{ g.enterForm.isbn_13(class='form-control') }}
+				    					{% for error in g.enterForm.isbn_13.errors %}
+											<span style="color: red;">[{{ error }}]</span>
+										{% endfor %}
+				    				</div>
+		      					</div>
+
+		      					<div class="form-group">
+		      						<label for="full_title" class="form-label col-sm-3 control-label">Title</label>
+		      						<div class="col-sm-6">
+				    					{{ g.enterForm.full_title(class='form-control') }}
+				    					{% for error in g.enterForm.full_title.errors %}
+											<span style="color: red;">[{{ error }}]</span>
+										{% endfor %}
+				    				</div>
+		      					</div>
+
+		      					<div class="form-group">
+		      						<label for="authors" class="form-label col-sm-3 control-label">Authors</label>
+		      						<div class="col-sm-6">
+				    					{{ g.enterForm.authors(class='form-control') }}
+				    					{% for error in g.enterForm.authors.errors %}
+											<span style="color: red;">[{{ error }}]</span>
+										{% endfor %}
+				    				</div>
+		      					</div>
+
+		      					<div class="form-group">
+		      						<label for="pages" class="form-label col-sm-3 control-label">Pages</label>
+		      						<div class="col-sm-6">
+				    					{{ g.enterForm.pages(class='form-control') }}
+				    					{% for error in g.enterForm.pages.errors %}
+											<span style="color: red;">[{{ error }}]</span>
+										{% endfor %}
+				    				</div>
+		      					</div>
+
+		      					<div class="form-group">
+		      						<label for="publish_date" class="form-label col-sm-3 control-label">Date of Publication</label>
+		      						<div class="col-sm-6">
+				    					{{ g.enterForm.publish_date(class='form-control') }}
+				    					{% for error in g.enterForm.publish_date.errors %}
+											<span style="color: red;">[{{ error }}]</span>
+										{% endfor %}
+				    				</div>
+		      					</div>
+
+		      					<div class="form-group">
+		      						<label for="category" class="form-label col-sm-3 control-label">Category</label>
+		      						<div class="col-sm-6">
+				    					{{ g.enterForm.category(class='form-control') }}
+				    					{% for error in g.enterForm.category.errors %}
+											<span style="color: red;">[{{ error }}]</span>
+										{% endfor %}
+				    				</div>
+		      					</div>
+
+		      					{{ g.enterForm.cover() }}
+
+	      					</div>
+
+      					</div>
+      				</div>
+
+      				<div class="modal-footer">
+        				<button type="button" class="btn btn-flat" data-dismiss="modal">Close</button>
+        				<button type=submit class="btn btn-flat">Add to Collection</button>
+      				</div>
+
+      			</form>
+
+			</div>
+		</div>
+	</div>

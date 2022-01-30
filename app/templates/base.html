@@ -1,0 +1,94 @@
+{% extends 'bootstrap/base.html' %}
+
+{% block head %}
+	{{ super() }}
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Noto+Sans:wght@400;700&family=Barlow:wght@500&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block styles %}
+	{{super()}}
+	<link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}">
+{% endblock %}
+
+{% block title %}
+	{% if title %}
+		{{ title }} - Library 
+	{% else %} 
+		Welcome to the Library
+	{% endif %}
+{% endblock %}
+
+{% block navbar %}
+	<nav class="navbar navbar-light bg-white">
+		<div class="container">
+			<div class="navbar-header">
+<!-- 				<button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarNav" aria-expanded="false">
+					<span class="navbar-toggler-icon"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button> -->
+				<a class="navbar-left" id="logo">
+					<img width="90px" src="{{ url_for('static', filename='library.png') }}">
+				</a>
+			</div>
+
+			<ul class="nav navbar-nav navbar-right" id="navbarNav" style="margin-top: 10px;">
+					{% if not current_user.is_anonymous %}
+					<li class="nav-item"><a href="{{ url_for('index') }}" class="nav-btn-text">VIEW COLLECTION</a></li>
+					<li class="nav-item"><a href="{{ url_for('enter') }}" class="nav-btn-text">SCAN BOOKS</a></li>
+					<button class="btn btn-outline-success" href="{{ url_for('logout') }}" type="button" id="logout-btn">Logout</button>
+					{% else %}
+					<button class="btn btn-default navbar-btn" href="{{ url_for('login') }}" type="button">Login</button>
+					{% endif %}
+			</ul>
+		</div>
+	</nav>
+	<hr style="border-color: black;"/>
+{% endblock %}
+
+{% block content %}
+	<div class="container" style="margin-bottom: 5em;">
+		<div class="col-lg-10 col-lg-push-1">
+			{% with messages = get_flashed_messages() %}
+			{% if messages %}
+				{% for message in messages %}
+					<div class="alert alert-info" role="alert">{{ message }}</div>
+				{% endfor %}
+			{% endif %}
+			{% endwith %}
+
+			{% block app_content %}{% endblock %}
+		</div>
+	</div>
+{% endblock %}
+
+{% block scripts %}
+	{{ super() }}
+	<script src="https://unpkg.com/libphonenumber-js@1.x/bundle/libphonenumber-min.js"></script>
+	<script>
+
+		function populateDefaultFields(modalElem) {
+			$(modalElem).modal('show')
+			$(modalElem).find('.form-control').each(function() {
+				let defaultVal = $(this)[0].attributes['default'].nodeValue;
+				$(this)[0].value = defaultVal
+			})
+		}
+
+		function clearModalFields(modalElem) {
+			$(modalElem).find('.form-control').each(function () {
+				$(this)[0].value = ''
+			})
+			$(modalElem).modal('hide')
+		}
+
+		function phoneNumberFormatter() {
+			const asYouType = new libphonenumber.AsYouType('US')
+			const formattedPhoneNum = asYouType.input($('#phone_num')[0].value)
+			$('#phone_num')[0].value = formattedPhoneNum
+		}
+	</script>
+{% endblock %}

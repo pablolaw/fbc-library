@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+
+{% block scripts %}
+	{{ super() }}
+	<script src="https://cdn.rawgit.com/serratus/quaggaJS/0420d5e0/dist/quagga.min.js"></script>
+	<script>
+		$(function() {
+			$('#lookUpForm').submit(
+				function(event) {
+					const isbn = $('#isbn').val()
+					$.get('/lookup/' + $('#isbn').val()
+						).done(function(response) {
+							populateFields('#enter-modal', response)
+							$('#enter-modal').modal('show')
+						}).fail(function() {
+							console.log('Something wrong')
+						});
+
+					event.preventDefault();
+				})
+		});
+
+		function populateFields(modalElem, data) {
+			const modal = $(modalElem)
+			let cover_url = "{{ url_for('static', filename='nocover.jpg')}}"
+			if (data.cover !== '') {
+				cover_url = data['cover']
+			}
+			modal.find('#cover_container').html(`<img src="${cover_url}">`)
+			for (let key in data) {
+				modal.find('#' + key)[0].value = data[key];
+			}
+		}
+
+	</script>
+{% endblock %}
+
+
+{% block app_content %}
+<div style="margin-bottom: 10px; margin-left: -2em">
+	<div id="headerTitle">SCAN BOOKS</div>
+	<div id="headerSubtitle">{{ num_books }} ENTER A 10 OR 13 DIGIT ISBN</div>
+</div>
+<div class="container" style="margin-top: 50px;">
+	<div id="camera_container" class="col-lg-6">
+		<img width="450px" src="{{ url_for('static', filename='isbn_ex.png') }}">
+	</div>
+
+	<div class="col-lg-6" style="margin-top: 5em;">
+		<div class="row" style="margin-bottom: 2em;">
+				<button class="btn btn-flat col-lg-7">
+					<span class="glyphicon glyphicon-camera pull-left"></span> SCAN VIA CAMERA
+				</button>
+		</div>
+
+		<div class="row">
+			<div class="strike col-lg-7">
+   				<span>OR</span>
+   			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-lg-8">
+				<form class="form form-horizontal form_label" id="lookUpForm">
+
+				<div class="row">
+					<label for="name" class="form-label col-sm-2 control-label">ISBN</label>
+				</div>
+
+				<div class="row">
+					<div class="col-lg-8">
+						{{ g.lookUpForm.isbn(class='form-control') }}
+						{% for error in g.lookUpForm.isbn.errors %}
+							<span style="color: red;">[{{ error }}]</span>
+						{% endfor %}
+					</div>
+					<div class="col-lg-2">
+						<button type=submit class="btn btn-flat">Look Up</button>
+					</div>
+				</div>
+			</form>
+			</div>
+		</div>
+	</div>
+</div>
+
+{% include '_entermodal.html' %}
+
+{% endblock %}

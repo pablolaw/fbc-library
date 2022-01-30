@@ -1,0 +1,267 @@
+{% extends "base.html" %}
+
+{% block head %}
+	{{ super() }}
+	<style type="text/css">
+		th, td {
+			font-family: 'Noto Sans', sans-serif; 
+			color: black; 
+			font-size: 13px; 
+			letter-spacing: 0.1em;
+		}
+
+		#bookTitle {
+			font-family: 'Barlow', sans-serif; 
+			color: black; 
+			font-size: 17px; 
+			letter-spacing: 0.1em;
+		}
+
+		#bookAuthor {
+			font-family: 'Barlow', sans-serif; 
+			color: black; 
+			font-size: 16px;
+		}
+
+		#bookInfo {
+			font-family: 'Noto Sans', sans-serif; 
+			color: black; 
+			font-size: 13px; 
+			letter-spacing: 0.1em; 
+			margin-top: 4px; 
+			margin-bottom: 4px;
+		}
+
+		#bookCategory {
+			font-family: 'Noto Sans', sans-serif; 
+			color: black; 
+			font-size: 13px; 
+			letter-spacing: 0.1em;
+		}
+
+		#bookStatus {
+			margin-top: 23px;
+			font-family: 'Noto Sans', sans-serif; 
+			font-size: 13px; 
+			letter-spacing: 0.1em;
+		}
+
+		.bookInOutDate {
+			font-family: 'Noto Sans', sans-serif; 
+			color: black; 
+			font-size: 13px; 
+			letter-spacing: 0.1em;
+		}
+
+		.panel-heading {
+			font-family: 'Noto Sans', sans-serif; 
+			color: black; 
+			font-size: 13px; 
+			letter-spacing: 0.1em;
+		}
+
+		.loan-type {
+			font-family: 'Montserrat', sans-serif; 
+			color: black; 
+			font-size: 20px;
+			margin-bottom: 10px; 
+			margin-left: -1em
+		}
+
+		.loan-result-header {
+			font-family: 'Barlow', sans-serif; 
+			color: black; 
+			font-size: 15px;
+			margin-top: -11px;
+			margin-left: -1em;
+			margin-bottom: 1em;
+			letter-spacing: 0.1em; 
+		}
+	</style>
+{% endblock %}
+
+{% block scripts %}
+	{{ super() }}
+	<script>
+
+		$(function() {
+			let ascending=true;
+			$('#sortButton').click(
+				function(event) {
+					console.log('I was clicked!')
+					if (ascending) {
+						sortTable('#past_loans_table', 'desc')
+						$('#sortButton span')[0].className = 'glyphicon glyphicon-sort-by-attributes-alt'
+						ascending = false
+					} else {
+						sortTable('#past_loans_table', 'asc')
+						$('#sortButton span')[0].className = 'glyphicon glyphicon-sort-by-attributes'
+						ascending = true
+					}
+				})
+		});
+
+
+		function sortTable(table, order) {
+			const asc = order === 'asc'
+			const trows = $(table).find('tbody > tr')
+
+			function compareElem(a, b) {
+				const a_parts = a.children[6].innerText.split('-');
+				const a_date = new Date(a_parts[0], a_parts[1] - 1, a_parts[2]);
+				const b_parts = b.children[6].innerText.split('-');
+				const b_date = new Date(b_parts[0], b_parts[1] - 1, b_parts[2]);
+
+				if (asc) {
+					return a_date - b_date
+				} 
+				return b_date - a_date
+			}
+			trows.sort(compareElem).appendTo(table + ' tbody')
+		}
+	</script>
+{% endblock %}
+
+{% block app_content %}
+	<div style="margin-bottom: 2em; margin-left: -2em">
+			<div id="headerTitle">BORROWING HISTORY</div>
+			<div id="headerSubtitle">VIEW CURRENT AND PAST LOANS MADE BY <span style="font-weight: bold;">{{ phone_num }}</span></div>
+			<div id="headerSubtitle">{{ curr_loans['count'] }} ACTIVE LOANS AND {{ past_loans['count'] }} PAST LOANS</div>
+	</div>
+
+	<div class="loan-type">CURRENT LOANS</div>
+
+	{% for loan in curr_loans['items'] %}
+			{% with book = loan.loaned_book %}
+
+			<div>
+				{% if not loan.is_overdue() %}
+				<div class="panel panel-success">
+					<div class="panel-heading">Status: <span style="font-weight: bold;">AWAY ON LOAN</span></div>
+				{% else %}
+				<div class="panel panel-danger">
+					<div class="panel-heading">Status: <span style="font-weight: bold;">OVERDUE</span></div>
+				{% endif %}
+
+				
+
+					<div class="panel-body">
+						<div style="border-left: 3px black solid; padding-left: 15px;">
+							<div class="row">
+								<div class="col-lg-2">
+									<img width="100px" src="{{ book.cover }}">
+								</div>
+
+								<div class="col-lg-5">
+									<div id="bookTitle"> {{ book.full_title.upper() }} </div>
+									<div id="bookAuthor">by: 
+										<span style="font-weight: bold;">
+											{% for author in list_authors(book.authors, as_list=True) %}
+													{{ author }}{% if not loop.last %},{% endif %}
+											{% endfor %}
+										</span>
+									</div>
+									<div style="margin-top: 3em;">
+										<div class="bookInOutDate"> DATE TAKEN OUT: <span style="font-weight: bold;">{{ loan.out_timestamp.strftime('%Y-%m-%d') }}</span></div>
+										<div class="bookInOutDate"> DUE DATE: <span style="font-weight: bold;">{{ loan.in_timestamp.strftime('%Y-%m-%d') }}</span></div>
+									</div>
+								</div>
+
+								<div class="col-lg-5">
+									<div class="row">
+										<form class="form col-lg-offset-1" method="post" action="{{ url_for('extend_loan', book_isbn=book.isbn_13) }}">
+											{{ g.editForm.hidden_tag() }}
+											<div class="row">
+												<label for="loan_duration_length" class="form-label col-lg-6">Extend Loan for:</label> 
+											</div>
+											
+											<div class="row">
+												<div class="col-lg-3" style="padding-right: 0px;">
+													{{ g.loan_extend_form.loan_duration_length(class='form-control') }}
+												</div>
+												<div class="col-lg-4 dropdown">
+													{{ g.loan_extend_form.loan_duration_unit(class='form-control') }}
+												</div>
+												<button type=submit class="btn btn-flat">Extend</button>
+											</div>
+										</form>
+									</div>
+
+									<div class="strike">
+   										<span>OR</span>
+   									</div>
+
+									
+									<div class="row">
+										<form class="form" method="post" action="{{ url_for('close_loan', book_isbn=book.isbn_13) }}">
+											{{ g.loan_close_form.hidden_tag() }}
+											<div class="col-lg-offset-2">
+												<button type=submit class="btn btn-flat">Return Book and Close Loan</button>
+											</div>
+										</form>
+										
+									</div>
+								</div>
+
+
+
+							</div>
+						</div>
+					</div>
+
+				</div>
+			</div>
+
+			{% endwith %}
+	{% endfor %}
+
+
+	<div style="margin-top: 5em;">
+		<div class="row">
+			<div class="col-lg-3">
+				<div class="loan-type">PAST LOANS</div>
+				<div class="loan-result-header">{{ past_loans['count'] }} PAST LOAN(S) FOUND</div>
+			</div>
+			<div class="col-lg-2 pull-right col-lg-pull-1">
+				<button id="sortButton" type="button" class="btn btn-flat" style="margin-top: 15px; color: black; border-color: white;">
+					<span class="glyphicon glyphicon-sort-by-attributes" aria-hidden="true"></span> SORT BY RETURN DATE
+				</button>
+			</div>
+		</div>
+		<table class="table table-bordered" id="past_loans_table">
+			<thead>
+				<tr>
+					<th>TITLE</th>
+					<th>AUTHORS</th>
+					<th>ISBN-13</th>
+					<th>CATEGORY</th>
+					<th>CONTACT NAME</th>
+					<th>DATE TAKEN OUT</th>
+					<th>DATE RETURNED</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for loan in past_loans['items'] %}
+					{% with book = loan.loaned_book %}
+					<tr>
+						<td>{{ book.full_title }}</td>
+						<td>
+							{% for author in list_authors(book.authors, as_list=True) %}
+								{{ author }}{% if not loop.last %},{% endif %}
+							{% endfor %}
+						</td>
+						<td>{{ book.isbn_13 }}</td>
+						<td>{{ book.book_category.name }}</td>
+						<td>{{ loan.loanee }}</td>
+						<td>{{ loan.out_timestamp.strftime('%Y-%m-%d') }}</td>
+						<td>{{ loan.in_timestamp.strftime('%Y-%m-%d') }}</td>
+					</tr>
+					{% endwith %}
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+
+{% endblock %}
+
+

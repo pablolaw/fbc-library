@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+{% if edit %}
+	<div id="headerTitle">EDIT BOOK INFORMATION</div>
+{% else %}
+	<div id="headerTitle">YOU'RE ALMOST THERE...</div>
+	<div id="headerSubtitle">Verify filled fields and enter information for the missing ones</div>
+{% endif %}
+
+<div class="container form_label" style="margin-top: 20px;">
+	<div class="row">
+		{% if cover %}
+			<div class="col-lg-2">
+				<img src="{{ cover }}">
+			</div>
+		{% endif %}
+
+		<form class="col-lg-10 form form-horizontal" method="post" role="form">
+			{{ form.hidden_tag() }}	
+			{% if not edit %}
+				<p>
+					{{ form.isbn_10.label }}<br>
+					{{ form.isbn_10(size=10) }}<br>
+					{% for error in form.isbn_10.errors %}
+					<span style="color: red;">[{{ error }}]</span>
+					{% endfor %}
+				</p>
+				<p>
+					{{ form.isbn_13.label }}<br>
+					{{ form.isbn_13(size=13) }}<br>
+					{% for error in form.isbn_13.errors %}
+					<span style="color: red;">[{{ error }}]</span>
+					{% endfor %}
+				</p>
+			{% endif %}
+			<p>
+				{{ form.full_title.label }}<br>
+				{{ form.full_title(size=100) }}<br>
+				{% for error in form.full_title.errors %}
+				<span style="color: red;">[{{ error }}]</span>
+				{% endfor %}
+			</p>
+			<p>
+				{{ form.authors.label }}<br>
+				{{ form.authors(size=100) }}<br>
+				{% for error in form.authors.errors %}
+				<span style="color: red;">[{{ error }}]</span>
+				{% endfor %}
+			</p>
+			<p>
+				{{ form.pages.label }}<br>
+				{{ form.pages(size=5) }}<br>
+				{% for error in form.pages.errors %}
+				<span style="color: red;">[{{ error }}]</span>
+				{% endfor %}
+			</p>
+			<p>
+				{{ form.publish_date.label }}<br>
+				{{ form.publish_date(size=10) }}<br>
+				{% for error in form.publish_date.errors %}
+				<span style="color: red;">[{{ error }}]</span>
+				{% endfor %}
+			</p>
+			<p>
+				{{ form.category.label }}<br>
+				{{ form.category(size=32) }}<br>
+				{% for error in form.category.errors %}
+				<span style="color: red;">[{{ error }}]</span>
+				{% endfor %}
+			</p>
+			{% if edit %}
+				<p>{{ form.submit(value="Update") }}</p>
+			{% else %}
+				<p>{{ form.submit() }}</p>
+			{% endif %}
+		</form>
+	</div>
+</div>
+{% endblock %}
