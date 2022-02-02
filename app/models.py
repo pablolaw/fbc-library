@@ -275,12 +275,12 @@ class Loan(db.Model):
 		return Loan.query.filter_by(phone_num=phone_num)
 
 	@staticmethod
-	def get_expiring_loans(delta=1, unit='weeks'):
+	def get_expiring(delta=1, unit='weeks'):
 		# returns a query object
 		td = timedelta(**{unit: delta})
 		if td.days > 0:
 			date_limit = datetime.today().date() + td
-			return Loan.query.filter(Loan.in_timestamp <= date_limit)
+			return Loan.query.filter(Loan.returned == False, Loan.in_timestamp <= date_limit).order_by(Loan.phone_num)
 		return Loan.query.filter_by(id=0)
 
 

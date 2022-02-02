@@ -90,6 +90,25 @@ def index():
 	form = EmptyForm()
 	return render_template('index.html', form=form, title='Home', num_books=num_books, books=books.items, next_url=next_url, prev_url=prev_url)
 
+@app.route('/dashboard')
+@login_required
+def dashboard():
+	page = request.args.get('page', 1, type=int)
+	exp_loans_q = Loan.get_expiring(delta=1, unit='weeks')
+	exp_loans_pag = exp_loans_q.paginate(page, app.config['LOANS_PER_PAGE'], False)
+	exp_loans = {
+		'total': exp_loans_q.count(),
+		'items': exp_loans_pag.items
+	}
+	next_url = url_for('dashboard', page=exp_loans_pag.next_num) if exp_loans_pag.has_next else None
+	prev_url = url_for('dashboard', page=exp_loans_pag.prev_num) if exp_loans_pag.has_prev else None
+	context = {
+		'exp_loans': exp_loans,
+		'next_url': next_url,
+		'prev_url': prev_url
+	}
+	return render_template('dashboard.html', **context)
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
 	if current_user.is_authenticated: # current_user is User object from db

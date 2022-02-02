@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block head %}
+	{{ super() }}
+	<style type="text/css">
+		#actions-header {
+            margin-top: 1.5em;
+            font-family: 'Montserrat', sans-serif; 
+			color: black; 
+			font-size: 25px; 
+			letter-spacing: 0.1em;;
+        }
+
+        .action-btn {
+            margin-right: 10px;
+        }
+
+        #bookTitle {
+			font-family: 'Barlow', sans-serif; 
+			color: black; 
+			font-size: 17px; 
+			letter-spacing: 0.1em;
+		}
+
+		#bookAuthor {
+			font-family: 'Barlow', sans-serif; 
+			color: black; 
+			font-size: 16px;
+		}
+
+		#bookInfo {
+			font-family: 'Noto Sans', sans-serif; 
+			color: black; 
+			font-size: 13px; 
+			letter-spacing: 0.1em; 
+			margin-top: 4px; 
+			margin-bottom: 4px;
+		}
+
+		#bookCategory {
+			font-family: 'Noto Sans', sans-serif; 
+			color: black; 
+			font-size: 13px; 
+			letter-spacing: 0.1em;
+		}
+
+		#bookStatus {
+			margin-top: 23px;
+			font-family: 'Noto Sans', sans-serif; 
+			font-size: 13px; 
+			letter-spacing: 0.1em;
+		}
+
+		.bookInOutDate {
+			font-family: 'Noto Sans', sans-serif; 
+			color: black; 
+			font-size: 13px; 
+			letter-spacing: 0.1em;
+		}
+
+		.panel-heading {
+			font-family: 'Noto Sans', sans-serif; 
+			color: black; 
+			font-size: 13px; 
+			letter-spacing: 0.1em;
+		}
+
+		.loan-type {
+			font-family: 'Montserrat', sans-serif; 
+			color: black; 
+			font-size: 20px;
+			margin-bottom: 10px; 
+			margin-left: -1em
+		}
+
+		.loan-result-header {
+			font-family: 'Barlow', sans-serif; 
+			color: black; 
+			font-size: 15px;
+			margin-top: -11px;
+			margin-left: -1em;
+			margin-bottom: 1em;
+			letter-spacing: 0.1em; 
+		}
+
+        .loanee-info {
+            margin-bottom: 5px;
+			font-family: 'Noto Sans', sans-serif; 
+			font-size: 13px; 
+			letter-spacing: 0.1em;
+        }
+	</style>
+{% endblock %}
+
+{% block app_content %}
+    <div id="actions-panel" class="container-fluid" style="background-color: #cfc8be;">
+        <div class="row">
+            <div class="col-lg-3 col-lg-offset-1" style="margin-top: 3em; margin-bottom: 2em;">
+                <img width="150px" src="{{ url_for('static', filename='lamp.png')}}">
+            </div>
+
+            <div class="col-lg-7" style="margin-bottom: 2em;">
+                <div class="row">
+                    <div id="actions-header">What would you like to do?</div>
+                </div>
+
+                <div class="col-lg-10 col-lg-offset-1">
+                    <div class="row" style="margin-top: 1em; margin-bottom: 1em;">
+                        <a href="{{ url_for('index') }}">
+                            <button href="{{ url_for('index') }}" class="col-lg-11 btn btn-flat-black action-btn">
+                                <span class="glyphicon glyphicon-book"></span><span style="margin-left: 10px;">VIEW BOOKS IN COLLECTION</span>
+                            </button>
+                        </a>
+                    </div>
+                    <div class="row" style="margin-bottom: 1em;">
+                        <a href="{{ url_for('enter') }}">
+                            <button  class="col-lg-11 btn btn-flat-black action-btn">
+                                <span class="glyphicon glyphicon-barcode"></span><span style="margin-left: 10px;">ENTER BOOKS INTO COLLECTION</span>
+                            </button>
+                        </a>
+                    </div>
+                    <div class="row" style="margin-bottom: 1em;">
+                        <button disabled class="col-lg-11 btn btn-flat-black action-btn">
+                            <span class="glyphicon glyphicon-transfer"></span><span style="margin-left: 10px;">LOOK UP LOANS BY CONTACT INFO</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div style="margin-top: 5em; margin-bottom: 2em; margin-left: -2em">
+		<div id="headerTitle"> LOANS EXPIRING IN < 1 WEEK </div>
+		<div id="headerSubtitle">{{ exp_loans['total'] }} LOANS(S) SOON EXPIRING</div>
+	</div>
+
+    {% for loan in exp_loans['items'] %}
+			{% with book = loan.loaned_book %}
+
+			<div>
+				{% if not loan.is_overdue() %}
+				<div class="panel panel-success">
+					<div class="panel-heading">Status: <span style="font-weight: bold;">AWAY ON LOAN</span></div>
+				{% else %}
+				<div class="panel panel-danger">
+					<div class="panel-heading">Status: <span style="font-weight: bold;">OVERDUE</span></div>
+				{% endif %}
+
+				
+
+					<div class="panel-body">
+						<div style="border-left: 3px black solid; padding-left: 15px;">
+							<div class="row">
+								<div class="col-lg-2">
+									<img width="100px" src="{{ book.cover }}">
+								</div>
+
+								<div class="col-lg-5">
+									<div id="bookTitle"> {{ book.full_title.upper() }} </div>
+									<div id="bookAuthor">by: 
+										<span style="font-weight: bold;">
+											{% for author in list_authors(book.authors, as_list=True) %}
+													{{ author }}{% if not loop.last %},{% endif %}
+											{% endfor %}
+										</span>
+									</div>
+									<div style="margin-top: 1em;">
+                                        <div class="loanee-info"><span class="glyphicon glyphicon-phone-alt"></span> <span style="font-weight: bold;">{{ loan.phone_num }}</span></div>
+                                        <div class="loanee-info"><span class="glyphicon glyphicon-user"></span> <span style="font-weight: bold;">{{ loan.loanee }}</span></div>
+										<div class="bookInOutDate"> DATE TAKEN OUT: <span style="font-weight: bold;">{{ loan.out_timestamp.strftime('%Y-%m-%d') }}</span></div>
+										<div class="bookInOutDate"> DUE DATE: <span style="font-weight: bold;">{{ loan.in_timestamp.strftime('%Y-%m-%d') }}</span></div>
+									</div>
+								</div>
+
+								<div class="col-lg-5">
+									<div class="row">
+										<form class="form col-lg-offset-1" method="post" action="{{ url_for('extend_loan', book_isbn=book.isbn_13) }}">
+											{{ g.editForm.hidden_tag() }}
+											<div class="row">
+												<label for="loan_duration_length" class="form-label col-lg-6">Extend Loan for:</label> 
+											</div>
+											
+											<div class="row">
+												<div class="col-lg-3" style="padding-right: 0px;">
+													{{ g.loan_extend_form.loan_duration_length(class='form-control') }}
+												</div>
+												<div class="col-lg-4 dropdown">
+													{{ g.loan_extend_form.loan_duration_unit(class='form-control') }}
+												</div>
+												<button type=submit class="btn btn-flat">Extend</button>
+											</div>
+										</form>
+									</div>
+
+									<div class="strike">
+   										<span>OR</span>
+   									</div>
+
+									
+									<div class="row">
+										<form class="form" method="post" action="{{ url_for('close_loan', book_isbn=book.isbn_13) }}">
+											{{ g.loan_close_form.hidden_tag() }}
+											<div class="col-lg-offset-2">
+												<button type=submit class="btn btn-flat">Return Book and Close Loan</button>
+											</div>
+										</form>
+										
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+				</div>
+			</div>
+
+			{% endwith %}
+	{% endfor %}
+
+    <nav aria-label="...">
+        <ul class="pager">
+            <li class="previous{% if not prev_url %} disabled{% endif %}">
+                <a href="{{ prev_url or '#' }}">
+                    <span aria-hidden="true">&larr;</span> PREVIOUS BOOKS
+                </a>
+            </li>
+            <li class="next{% if not next_url %} disabled{% endif %}">
+                <a href="{{ next_url or '#' }}">
+                    MORE BOOKS <span aria-hidden="true">&rarr;</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+{% endblock %}
