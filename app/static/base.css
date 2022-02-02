@@ -1,12 +1,20 @@
 
 input {
+	font-family: 'Barlow', sans-serif;
 	margin-top: 0;
 	margin-right: 0;
 	margin-left: 0;
+	box-shadow: none !important;
+	border: 0 !important;
+	border-bottom: 1px solid #ddd !important;
 }
 
 a {
-	color: #003d99;
+	color: #998751e7;
+}
+
+a:hover {
+	color: #7a6c41e7;
 }
 
 #logo {
@@ -72,7 +80,27 @@ a {
 }
 
 .btn-flat:hover {
-	background-color: #d1d1d1;
+	background-color: black;
+	border-color: black;
+	font-family: 'Barlow', sans-serif;
+	color: white;
+	letter-spacing: 0.05em;
+}
+
+.btn-flat-black:hover {
+	background-color: white;
+	border-color: black;
+	font-family: 'Barlow', sans-serif;
+	color: black;
+	letter-spacing: 0.05em;
+}
+
+.btn-flat-black {
+	background-color: black;
+	border-color: black;
+	font-family: 'Barlow', sans-serif;
+	color: white;
+	letter-spacing: 0.05em;
 }
 
 .form-label {

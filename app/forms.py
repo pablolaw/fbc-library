@@ -78,12 +78,12 @@ class BookEntryForm(FlaskForm):
 class LoanBookForm(FlaskForm):
 	phone_num = StringField('Phone Number', validators=[DataRequired(), Length(min=14, max=14)])
 	name = StringField('Name', validators=[DataRequired(), Length(max=32)])
-	loan_duration_length = IntegerField('Loan Duration Length', validators=[DataRequired(), NumberRange(min=1)])
+	loan_duration_length = IntegerField('Loan Duration Length', validators=[DataRequired(), NumberRange(min=1, max=30)])
 	loan_duration_unit = SelectField('Loan Duration Unit', choices=[('days', 'Days'), ('weeks', 'Weeks')], default='weeks', validators=[DataRequired()])
 	submit = SubmitField('Check Out')
 
 class LoanExtendForm(FlaskForm):
-	loan_duration_length = IntegerField('Loan Duration Length', validators=[DataRequired(), NumberRange(min=1)])
+	loan_duration_length = IntegerField('Loan Duration Length', validators=[DataRequired(), NumberRange(min=1, max=30)])
 	loan_duration_unit = SelectField('Loan Duration Unit', choices=[('days', 'Days'), ('weeks', 'Weeks')], default='weeks', validators=[DataRequired()])
 	submit = SubmitField('Extend')
 

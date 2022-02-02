@@ -55,16 +55,21 @@
 				{% endif%}
 			</td>
 			<td>
-				<p>
-					<a class="btn btn-flat" href="javascript:populateDefaultFields('#{{ book.id }}-edit-modal');" id="{{ book.id }}-edit-btn">Edit</a>
-				</p>
-				<p>	
-					<button type="button" class="btn btn-flat" data-toggle="modal" data-target="#{{ book.id }}-delete-modal" id="{{ book.id }}-edit-btn">Delete</button>
+				<div>	
+					<button type="button" class="btn btn-flat-black pull-right" data-toggle="modal" data-target="#{{ book.id }}-delete-modal" 
+						id="{{ book.id }}-edit-btn" style="margin-bottom: 10px;">
+						<span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+					</button>
 					<!-- <form action="{{ url_for('delete', book_isbn=book.isbn_13) }}" method="post">
 	                	{{ form.hidden_tag() }}
 	                	{{ form.submit(value='Delete') }}
 	            	</form> -->
-				</p>
+				</div>
+				<div>
+					<a class="btn btn-flat align-right" href="javascript:populateDefaultFields('#{{ book.id }}-edit-modal');" id="{{ book.id }}-edit-btn">
+						<span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
+					</a>
+				</div>
 			</td>
 		</tr>
 	</table>

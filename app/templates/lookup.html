@@ -1,7 +1,6 @@
 {% extends "base.html" %}
 {% import 'bootstrap/wtf.html' as wtf %}
 
-
 {% block scripts %}
 	{{ super() }}
 	<script src="https://cdn.rawgit.com/serratus/quaggaJS/0420d5e0/dist/quagga.min.js"></script>
@@ -9,17 +8,51 @@
 		$(function() {
 			$('#lookUpForm').submit(
 				function(event) {
+					$('#modalContentContainer').html(`{% include '_entermodal_loading.html' %}`)
+					$('#enter-modal').modal('show')
 					const isbn = $('#isbn').val()
 					$.get('/lookup/' + $('#isbn').val()
 						).done(function(response) {
+							$('#modalContentContainer').html(`<div>{% include '_entermodal_loaded.html' %}</div>`)
 							populateFields('#enter-modal', response)
-							$('#enter-modal').modal('show')
 						}).fail(function() {
 							console.log('Something wrong')
 						});
 
 					event.preventDefault();
 				})
+
+			let _isScannerOn = false;
+			$('#scannerBtn').click(
+				function(event) {
+					if (!_isScannerOn) {
+						startScanner();
+						_isScannerOn = true;
+					} else {
+						closeScanner()
+						_isScannerOn = false;
+					}
+				}
+			)
+
+			Quagga.onDetected(function (result) {
+				const detected = result.codeResult
+				if (detected.format === "ean_13" && detected.code.slice(0, 3) === '978') {
+					$('#modalContentContainer').html(`{% include '_entermodal_loading.html' %}`)
+					$('#enter-modal').modal('show')
+					$.get('/lookup/' + result.codeResult.code
+					).done(function(response) {
+						$('#modalContentContainer').html(`{% include '_entermodal_loaded.html' %}`)
+						populateFields('#enter-modal', response)
+					}).fail(function() {
+						console.log('Something wrong')
+					});
+				closeScanner()
+				_isScannerOn = false;
+				} else {
+					console.log(`Invalid ISBN detected: ${detected.code}. Resuming...`)
+				}
+			});
 		});
 
 		function populateFields(modalElem, data) {
@@ -32,6 +65,42 @@
 			for (let key in data) {
 				modal.find('#' + key)[0].value = data[key];
 			}
+		}
+
+		function startScanner() {
+			$('#camera_container').empty()
+			$('#scannerBtn').children()[1].textContent = "CLOSE SCANNER"
+			Quagga.init({
+				inputStream: {
+					name: "Live",
+					type: "LiveStream",
+					target: document.querySelector('#camera_container'),
+					constraints: {
+						width: 450,
+						height: 286,
+						facingMode: "environment"
+					}
+				},
+				locate: false,
+				decoder: {
+					readers: [
+						"ean_reader",
+						"upc_reader"
+					]
+				}
+			}, function(err) {
+				if (err) {
+					console.log(err);
+					return
+				}
+				Quagga.start();
+			});
+		}
+
+		function closeScanner() {
+			Quagga.stop()
+			$('#scannerBtn').children()[1].textContent = "SCAN VIA CAMERA"
+			$('#camera_container').html("<img width='450px' src='{{ url_for('static', filename='isbn_ex.png') }}''>")
 		}
 
 	</script>
@@ -50,8 +119,8 @@
 
 	<div class="col-lg-6" style="margin-top: 5em;">
 		<div class="row" style="margin-bottom: 2em;">
-				<button class="btn btn-flat col-lg-7">
-					<span class="glyphicon glyphicon-camera pull-left"></span> SCAN VIA CAMERA
+				<button id="scannerBtn" class="btn btn-flat col-lg-7">
+					<span class="glyphicon glyphicon-camera pull-left"></span id="scannerBtnText"><span>SCAN VIA CAMERA</span> 
 				</button>
 		</div>
 
