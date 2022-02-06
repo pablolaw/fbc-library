@@ -626,8 +626,8 @@ def loans():
 		'count': exp_loans_q.count(),
 		'items': exp_loans_pag.items
 	}
-	next_url = url_for('loans', page=past_loans_pag.next_num) if exp_loans_pag.has_next else None
-	prev_url = url_for('loans', page=past_loans_pag.prev_num) if exp_loans_pag.has_prev else None
+	next_url = url_for('loans', page=exp_loans_pag.next_num) if exp_loans_pag.has_next else None
+	prev_url = url_for('loans', page=exp_loans_pag.prev_num) if exp_loans_pag.has_prev else None
 
 	context = {
 		'exp_loans': exp_loans,
