@@ -156,7 +156,7 @@ class Book(SearchableMixin, db.Model):
 
 	@staticmethod
 	def init_index():
-		BookIndex.init(index='book')
+		BookIndex.init(index='book', using=elasticsearch)
 
 	def _get_status(self):
 		curr_loan = self.get_current_loan()
