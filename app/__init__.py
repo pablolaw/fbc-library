@@ -20,7 +20,7 @@ app.config.from_object(__name__)
 elasticsearch = Elasticsearch([app.config['ELASTICSEARCH_URL']]) if app.config['ELASTICSEARCH_URL'] else None
 Session(app)
 
-from app import routes, models
+from app import models, routes
 
 if not app.debug:
     if app.config['LOG_TO_STDOUT']:
