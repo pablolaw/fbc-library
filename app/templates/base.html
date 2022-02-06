@@ -30,7 +30,7 @@
 		<div class="container-fluid">
 				<div class="container-fluid my-3">
 					{% if not current_user.is_anonymous %}
-					<a href="{{ url_for('dashboard') }}" class="col-xs-3 navbar-brand mx-5">
+					<a href="{{ url_for('index') }}" class="col-xs-3 navbar-brand mx-5">
 						<img id="logo" width="120px" src="{{ url_for('static', filename='FBC_logo_black-book.gif') }}">
 						<span id="logo-text" class="mx-2">LIBRARY</span>
 					</a>
@@ -43,7 +43,7 @@
 			<div class="collapse navbar-collapse" id="navbarSupportedContent">
 				<ul class="navbar-nav me-auto mb-2 mb-lg-0 text-nowrap">
 					{% if not current_user.is_anonymous %}
-						{{ render_nav_item('index', 'VIEW COLLECTION') }}
+						{{ render_nav_item('all_books', 'VIEW COLLECTION') }}
 						{{ render_nav_item('enter', 'SCAN BOOKS')}}
 						{{ render_nav_item('logout', 'LOG OUT')}}
 					{% else %}

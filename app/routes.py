@@ -68,7 +68,7 @@ def utility_processor():
 
 @app.before_first_request
 def before_first_request():
-	Book.init_index()
+	# Book.init_index()
 	librarian = User.query.filter_by(username='librarian').first()
 	if not librarian:
 		librarian = User(username='librarian')
@@ -89,25 +89,25 @@ def before_request():
 		g.loan_close_form = EmptyForm()
 		g.loan_extend_form = LoanExtendForm()
 
+@app.route('/books')
+@login_required
+def all_books():
+	page = request.args.get('page', 1, type=int)
+	books = Book.query.order_by(Book.full_title).paginate(page, app.config['BOOKS_PER_PAGE'], False)
+	num_books = Book.query.count()
+	next_url = url_for('all_books', page=books.next_num) if books.has_next else None
+	prev_url = url_for('all_books', page=books.prev_num) if books.has_prev else None
+	form = EmptyForm()
+
+	# So that user returns to index page after performing action
+	session['url'] = url_for('all_books')
+
+	return render_template('collection.html', form=form, title='Home', num_books=num_books, books=books.items, next_url=next_url, prev_url=prev_url)
+
 @app.route('/')
 @app.route('/index')
 @login_required
 def index():
-	page = request.args.get('page', 1, type=int)
-	books = Book.query.order_by(Book.full_title).paginate(page, app.config['BOOKS_PER_PAGE'], False)
-	num_books = Book.query.count()
-	next_url = url_for('index', page=books.next_num) if books.has_next else None
-	prev_url = url_for('index', page=books.prev_num) if books.has_prev else None
-	form = EmptyForm()
-
-	# So that user returns to index page after performing action
-	session['url'] = url_for('index')
-
-	return render_template('index.html', form=form, title='Home', num_books=num_books, books=books.items, next_url=next_url, prev_url=prev_url)
-
-@app.route('/dashboard')
-@login_required
-def dashboard():
 	loan_phone_form = LoanPhoneForm(request.args)
 	if loan_phone_form.validate():
 		return redirect(url_for('loanee_history', phone_num=loan_phone_form.phone_num.data))
@@ -118,8 +118,8 @@ def dashboard():
 		'total': exp_loans_q.count(),
 		'items': exp_loans_pag.items
 	}
-	next_url = url_for('dashboard', page=exp_loans_pag.next_num) if exp_loans_pag.has_next else None
-	prev_url = url_for('dashboard', page=exp_loans_pag.prev_num) if exp_loans_pag.has_prev else None
+	next_url = url_for('index', page=exp_loans_pag.next_num) if exp_loans_pag.has_next else None
+	prev_url = url_for('index', page=exp_loans_pag.prev_num) if exp_loans_pag.has_prev else None
 	context = {
 		'loan_phone_form': loan_phone_form,
 		'exp_loans': exp_loans,
@@ -127,7 +127,7 @@ def dashboard():
 		'prev_url': prev_url
 	}
 	# So that user returns to dashboard page after performing action
-	session['url'] = url_for('dashboard')
+	session['url'] = url_for('index')
 	return render_template('dashboard.html', **context)
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -301,7 +301,7 @@ def edit(book_isbn):
 
 	if book is None:
 		flash(f'Book <ISBN-13: {book_isbn}> not in collection', 'error')
-		return redirect(url_for('index'))
+		return redirect(url_for('all_books'))
 
 	if g.editForm.validate_on_submit():
 		# Update category
@@ -339,7 +339,7 @@ def edit(book_isbn):
 	else:
 		flash(f'Unable to change Book <ISBN-13: {book_isbn}> data. Try again.', 'error')
 
-	return redirect(url_for('index'))
+	return redirect(url_for('all_books'))
 
 
 
@@ -370,7 +370,7 @@ def advanced_search():
 	if not g.as_form.validate_on_submit():
 		print(g.as_form.errors.items())
 		flash('Unable to query via advanced search. Check that at least one field is not empty and try again.', 'error')
-		return redirect(url_for('index'))
+		return redirect(url_for('all_books'))
 
 	page = request.args.get('page', 1, type=int)
 
@@ -386,7 +386,7 @@ def advanced_search():
 
 	if len(query_obj) == 0:
 		flash('At least one field must be non-empty for advanced search.', 'error')
-		return redirect(url_for('index'))
+		return redirect(url_for('all_books'))
 
 	books, total = Book.search_advanced(query_obj, page, app.config['BOOKS_PER_PAGE'])
 	next_url = url_for('advanced_search', page=page + 1) if total > page * app.config['BOOKS_PER_PAGE'] else None
@@ -394,7 +394,7 @@ def advanced_search():
 	form = EmptyForm()
 
 	# So that user returns to index page after performing action
-	session['url'] = url_for('index')
+	session['url'] = url_for('all_books')
 
 	context = {
 		'search_type':'Advanced',
@@ -413,7 +413,7 @@ def advanced_search():
 def search():
 	if not g.search_form.validate_on_submit():
 		print(g.search_form.errors.items())
-		return redirect(url_for('index'))
+		return redirect(url_for('all_books'))
 	page = request.args.get('page', 1, type=int)
 	if g.search_form.search_type.data == 'Keyword':
 		books, total = Book.search_keyword(g.search_form.q.data, page, app.config['BOOKS_PER_PAGE'])
@@ -445,7 +445,7 @@ def loan(book_isbn):
 	if not g.loanForm.validate_on_submit():
 		print(g.search_form.errors.items())
 		flash(f'Unable to check out Book <ISBN-13: {book_isbn}> for lending. Try again.', 'error')
-		return redirect(url_for('index'))
+		return redirect(url_for('all_books'))
 
 	book = None
 	if len(book_isbn) == 10:
@@ -455,11 +455,11 @@ def loan(book_isbn):
 
 	if book is None:
 		flash(f'Book <ISBN-13{book_isbn}> not in collection', 'error')
-		return redirect(url_for('index'))
+		return redirect(url_for('all_books'))
 
 	if not book.is_on_shelf():
 		flash(f'Book <ISBN-13: {book_isbn}> is not available for lending.', 'error')
-		return redirect(url_for('index'))
+		return redirect(url_for('all_books'))
 
 	# Create a loan object
 	loan_obj = Loan(loaned_book=book)
@@ -478,7 +478,7 @@ def loan(book_isbn):
 def extend_loan(book_isbn):
 	if not g.loan_extend_form.validate_on_submit():
 		flash(f'Unable to process loan extention for Book <ISBN-13: {book_isbn}>. Try again.', 'error')
-		return redirect(url_for('index'))
+		return redirect(url_for('all_books'))
 
 	book = None
 	if len(book_isbn) == 10:
@@ -488,11 +488,11 @@ def extend_loan(book_isbn):
 
 	if book is None:
 		flash(f'404: Book <ISBN-13: {book_isbn}> not in collection', 'error')
-		return redirect(url_for('index'))
+		return redirect(url_for('all_books'))
 
 	if book.is_on_shelf():
 		flash(f'400: Book <ISBN-13: {book_isbn}> is currently on shelf and not available for loan extension.', 'error')
-		return redirect(url_for('index'))
+		return redirect(url_for('all_books'))
 
 	loan = book.get_current_loan()
 	success = loan.extend_loan_period(g.loan_extend_form.loan_duration_length.data, g.loan_extend_form.loan_duration_unit.data)
@@ -508,14 +508,14 @@ def extend_loan(book_isbn):
 		session.pop('url')
 		return redirect(ret_url)
 
-	return redirect(url_for('index'))
+	return redirect(url_for('all_books'))
 
 @app.route('/loan/close/<book_isbn>', methods=['POST'])
 @login_required
 def close_loan(book_isbn):
 	if not g.loan_close_form.validate_on_submit():
 		flash(f'Unable to process loan extention for Book <ISBN-13: {book_isbn}>. Try again.', 'error')
-		return redirect(url_for('index'))
+		return redirect(url_for('all_books'))
 
 	book = None
 	if len(book_isbn) == 10:
@@ -525,11 +525,11 @@ def close_loan(book_isbn):
 
 	if book is None:
 		flash(f'404: Book <ISBN-13: {book_isbn}> not in collection', 'error')
-		return redirect(url_for('index'))
+		return redirect(url_for('all_books'))
 
 	if book.is_on_shelf():
 		flash(f'400: Book <ISBN-13: {book_isbn}> is currently on shelf and has no loan attached.', 'error')
-		return redirect(url_for('index'))
+		return redirect(url_for('all_books'))
 
 	loan = book.get_current_loan()
 	success = loan.close()
@@ -665,4 +665,4 @@ To delete one item
 @app.route('/logout')
 def logout():
 	logout_user()
-	return redirect(url_for('index'))
+	return redirect(url_for('login'))
