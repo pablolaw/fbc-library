@@ -68,6 +68,7 @@ def utility_processor():
 
 @app.before_first_request
 def before_first_request():
+	Book.init_index()
 	librarian = User.query.filter_by(username='librarian').first()
 	if not librarian:
 		librarian = User(username='librarian')

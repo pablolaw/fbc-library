@@ -151,9 +151,12 @@ class Book(SearchableMixin, db.Model):
 		return BookIndex(
 			_id=self.id,
 			full_title=self.full_title,
-			authors = self._author_repr(),
-			index='book'
+			authors = self._author_repr()
 		)
+
+	@staticmethod
+	def init_index():
+		BookIndex.init(index='book')
 
 	def _get_status(self):
 		curr_loan = self.get_current_loan()
