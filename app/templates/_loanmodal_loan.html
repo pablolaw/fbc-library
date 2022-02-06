@@ -1,13 +1,16 @@
 
-<div class="modal" id="{{ book.id }}-loan-modal" tabindex="-1" role="dialog" aria-labelledby="{{ book.id }}-loan-modal">
-	<div class="modal-dialog modal-lg" role="document">
+<div class="modal" id="m{{ book.id }}-loan-modal" tabindex="-1" role="dialog" aria-labelledby="m{{ book.id }}-loan-modal">
+	<div class="modal-dialog modal-xl" role="document">
 		<div class="modal-content">
-			<div class="modal-header">
-				<a class="close" aria-label="Close" href="javascript:clearModalFields('#{{ book.id }}-loan-modal');"><span aria-hidden="true">&times;</span></a>
-				<div id="modalHeader" class="modal-title">LOAN INFORMATION</div>
-				<div id="modalSubtitle" class="modal-title">VIEW CONTACT INFORMATION AND EXTEND OR CLOSE CURRENT LOAN.</div>
+			<div class="modal-header justify-content-between">
+				<div style="display: block;">
+					<div id="modalHeader" class="modal-title">LOAN INFORMATION</div>
+					<div id="modalSubtitle" class="modal-title">VIEW CONTACT INFORMATION AND EXTEND OR CLOSE CURRENT LOAN.</div>
+				</div>
+				<div>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
       		</div>
-
 			<div class="modal-body">
 
 				{% include '_bookinfo.html' %}
@@ -18,44 +21,37 @@
 					{{ g.loan_extend_form.hidden_tag() }}
 
 
-					<div class="panel panel-default">
+					<div class="card mb-3">
 
-						<div class="panel-heading">LOAN INFO</div>
-						 <div class="panel-body">
-							<div class="row">
-								<div class="col-lg-10 col-lg-offset-1">
-			  						<div class="col-lg-4">
-			  							<label for="phone_num" style="margin-top: 7px;" class="form-label col-sm-7 control-label">Contact <span class="glyphicon glyphicon-phone-alt" aria-hidden="true"></span></label>
-			  							{% with loan = book.get_current_loan() %}
-			      						<div class="col-sm-8">
-					    					<p class="form-control-static">
-					    						<a href="{{ url_for('loanee_history', phone_num=loan.phone_num)}}">{{ loan.phone_num }}</a>
-					    					</p>
-							    		</div>
-							    		{% endwith %}
-			  						</div>
+						<div class="card-header loan-info-card-header">LOAN INFO</div>
+						 <div class="card-body">
+							<div class="row g-4 align-items-end justify-content-center mb-3">
 
-			  						<div class="col-lg-4">
-			  							<label for="name" class="form-label col-sm-9 control-label" style="margin-top: 7px;">Contact Name</label>
-			  							{% with loan = book.get_current_loan() %}
-			      						<div class="col-sm-7">
-					    					<p class="form-control-static">{{ loan.loanee }}</p>
-							    		</div>
-							    		{% endwith %}
-			  						</div>
+								<div class="col-sm-4">
+									<div class="loan-info-title">CONTACT <i class="bi bi-telephone-fill"></i></div>
+									{% with loan = book.get_current_loan() %}
+										<div>
+											<a href="{{ url_for('loanee_history', phone_num=loan.phone_num) }}">{{ loan.phone_num }}</a>	
+										</div>
+							    	{% endwith %}
+								</div>
 
-			  						<div class="col-lg-4">
-			  							<label for="in_timestamp" class="form-label col-sm-8 control-label" style="margin-top: 7px;">Due</label>
-			  							{% with loan = book.get_current_loan() %}
-			      						<div class="col-sm-7">
-			      							{% if book.is_missing() %}
-					    						<p class="form-control-static" style="color: #b30000;">{{ loan.in_timestamp.strftime('%Y-%m-%d') }}</p>
-					    					{% else %}
-					    						<p class="form-control-static">{{ loan.in_timestamp.strftime('%Y-%m-%d') }}</p>
-					    					{% endif %}
-							    		</div>
-							    		{% endwith %}
-			  						</div>
+								<div class="col-sm-4">
+									<div class="loan-info-title">CONTACT NAME</div>
+									{% with loan = book.get_current_loan() %}
+										<div>{{ loan.loanee }}</div>
+									{% endwith %}
+								</div>
+
+								<div class="col-sm-4">
+									<div class="loan-info-title">DUE</div>
+									{% with loan = book.get_current_loan() %}
+										{% if book.is_missing() %}
+											<div style="color: #b30000;">{{ loan.in_timestamp.strftime('%Y-%m-%d') }}</div>
+										{% else %}
+											<div>{{ loan.in_timestamp.strftime('%Y-%m-%d') }}</div>
+										{% endif %}
+									{% endwith %}
 								</div>
 							</div>
 						</div>
@@ -66,22 +62,21 @@
 
 					<div class="action-header">EXTEND LOAN</div>
 
-					<div class="row">
-						<div class="col-lg-8 col-lg-offset-3">
-  						<div class="col-lg-3" style="padding-right: 0px; margin-top: 5px;">
-  							<label for="loan_duration_length" class="form-label control-label">Loan Extension Period</label>      							
-  						</div>
-  						<div class="col-lg-2" style="padding-right: 0px;">
-  							{{ g.loan_extend_form.loan_duration_length(class='form-control') }}
-  						</div>
-  						<div class="col-lg-3">
-  							<div class="dropdown">{{ g.loan_extend_form.loan_duration_unit(class='form-control') }}</div>
-  						</div>
-  						<div class="col-lg-1">
-  							<button type=submit class="btn btn-flat">Extend</button>
-  						</div>
+					<div class="row g-3 align-items-end justify-content-center mb-3">
+						<div class="form-floating col-sm-4">
+							{{ g.loan_extend_form.loan_duration_length(class="form-control", placeholder="") }}
+							{{ g.loan_extend_form.loan_duration_length.label }}					  
+						</div>
+
+						<div class="form-floating col-auto">
+							{{ g.loan_extend_form.loan_duration_unit(class="form-control") }}				  
+						</div>
+
+						<div class="col-auto">
+							<button type=submit class="btn btn-flat btn-sm">Extend</button>
 						</div>
 					</div>
+
 				</form>
 
 				<div class="strike">
@@ -90,20 +85,19 @@
 
 				<div class="action-header">RETURN BOOK</div>
 
-				<form class="form" method="post" action="{{ url_for('close_loan', book_isbn=book.isbn_13) }}">
+				<form class="form" id="f{{ book.id }}-close-form" method="post" action="{{ url_for('close_loan', book_isbn=book.isbn_13) }}">
 					{{ g.loan_close_form.hidden_tag() }}
-					<div class="row">
-						<div class="col-lg-2 col-lg-offset-4">
-							<button type=submit class="btn btn-flat">Return Book and Close Loan</button>
+					<div class="row g-3 align-items-end justify-content-center mb-3">
+						<div class="col-auto">
+							<button type="submit" class="btn btn-flat btn-sm">Return Book and Close Loan</button>
 						</div>
 					</div>
-
 				</form>
 
 			</div>
 
 			<div class="modal-footer">
-				<a class="btn btn-flat" href="javascript:clearModalFields('#{{ book.id }}-loan-modal');">Close</a>
+				<a class="btn btn-flat" href="javascript:clearModalFields('#m{{ book.id }}-loan-modal');">Close</a>
 			</div>
 
 		</div>

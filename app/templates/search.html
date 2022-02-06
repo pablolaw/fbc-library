@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% import 'bootstrap/wtf.html' as wtf %}
+{% import 'bootstrap/form.html' as wtf %}
 
 {% block head %}
 	{{ super() }}
@@ -63,39 +63,84 @@
 			padding-left: 15px;
 		}
 
+		#empty-text {
+			font-family: 'Barlow', sans-serif;
+			letter-spacing: 0.1em;
+			font-size: 1.2em;
+			color: grey;
+		}
+
 	</style>
 {% endblock %}
 
+{% block scripts %}
+	{{ super() }}
+	<script src="https://unpkg.com/libphonenumber-js@1.x/bundle/libphonenumber-min.js"></script>
+	<script>
+		function deleteBook(book_isbn) {
+			$.ajax(`/books/${book_isbn}`, 
+			{method: 'DELETE'}).done(function(response) {
+				window.location = response.url
+			}).fail(function() {
+				window.location.reload()
+			})
+		}
+
+		function phoneNumberFormatter(book_id) {
+			elem = '#' + String(book_id) + '-phone_num'
+			const asYouType = new libphonenumber.AsYouType('US')
+			const formattedPhoneNum = asYouType.input($(elem)[0].value)
+			$(elem)[0].value = formattedPhoneNum
+		}
+	</script>
+{% endblock %}
+
 {% block app_content %}
-	<div style="margin-bottom: 10px; margin-left: -2em">
-		<div id="headerTitle"> SEARCH COLLECTION </div>
-		<div id="headerSubtitle">{{ search_type.upper() }} SEARCH: {{ search_query }}</div>
-		<div id="headerSubtitle">{{ num_books }} BOOK(S) FOUND IN COLLECTION</div>
+	<div class="col-lg-8">
+		<div style="margin-bottom: 10px; margin-left: -2em">
+			<div id="headerTitle"> SEARCH COLLECTION </div>
+			<div id="headerSubtitle">{{ search_type.upper() }} SEARCH: {{ search_query }}</div>
+			<div id="headerSubtitle">{{ num_books }} BOOK(S) FOUND IN COLLECTION</div>
+		</div>
+
+		{% if g.search_form %}
+			{% include '_searchbar.html' %}
+		{% endif %}
+
+		{% if not books %}
+			<div class="row justify-content-center align-items-center">
+				<div class="row justify-content-center align-items-center">
+					<div class="col-sm-2 my-4 text-center">
+						<img width="90px" src="{{ url_for('static', filename='no_results.png') }}">
+					</div>
+				</div>
+				<div class="row justify-content-center align-items-center text-center">
+					<span id="empty-text" class="col-sm-6 mb-4 mx-3"> YOUR SEARCH RETURNED NO RESULTS</span>
+				</div>
+			</div>
+		{% else %}
+			<div class="table-responsive mb-5">
+				<table class="table table-hover">
+				{% for book in books %}
+					{% include '_bookentry.html' %}
+				{% endfor %}
+				</table>
+			</div>
+		{% endif %}
+
+		<nav aria-label="..." class="mt-5">
+			<ul class="pagination justify-content-center">
+				<li class="page-item{% if not prev_url %} disabled{% endif %}">
+					<a class="page-link" href="{{ prev_url or '#' }}">
+						<i class="bi bi-arrow-left"></i> PREVIOUS BOOKS
+					</a>
+				</li>
+				<li class="page-item{% if not next_url %} disabled{% endif %}">
+					<a class="page-link" href="{{ next_url or '#' }}">
+						MORE BOOKS <i class="bi bi-arrow-right"></i>
+					</a>
+				</li>
+			</ul>
+		</nav>
 	</div>
-
-	{% if g.search_form %}
-		{% include '_searchbar.html' %}
-	{% endif %}
-
-<!-- 	<div class="container"> -->
-	{% for book in books %}
-		{% include '_bookentry.html' %}
-	{% endfor %}
-<!-- 	</div> -->
-
-	<nav aria-label="...">
-        <ul class="pager btn-flat">
-            <li class="previous{% if not prev_url %} disabled{% endif %}">
-                <a href="{{ prev_url or '#' }}">
-                    <span aria-hidden="true">&larr;</span> PREVIOUS BOOKS
-                </a>
-            </li>
-            <li class="next{% if not next_url %} disabled{% endif %}">
-                <a href="{{ next_url or '#' }}">
-                    MORE BOOKS <span aria-hidden="true">&rarr;</span>
-                </a>
-            </li>
-        </ul>
-    </nav>
-
 {% endblock %}

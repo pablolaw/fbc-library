@@ -1,87 +1,98 @@
 
-<div>
-	<table class="table table-hover">
-		<tr>
-			<td width="60px">
-				{% if book.is_on_shelf() %}
-					<img class="book_status_shelf" width="120px" src="{{ book.cover }}">
-				{% elif book.is_on_loan() %}
-					<img class="book_status_loan" width="120px" src="{{ book.cover }}">
-				{% else %}
-					<img class="book_status_missing" width="120px" src="{{ book.cover }}">
+<tr>
+	<td class="col-xs-2">
+		{% if book.is_on_shelf() %}
+			<img class="book_status_shelf" width="120px" src="{{ book.cover }}">
+		{% elif book.is_on_loan() %}
+			<img class="book_status_loan" width="120px" src="{{ book.cover }}">
+		{% else %}
+			<img class="book_status_missing" width="120px" src="{{ book.cover }}">
+		{% endif %}
+	</td>
+	<td class="col-lg-9">
+		<div id="bookTitle"> {{ book.full_title.upper() }} </div>
+		<div id="bookAuthor">by: 
+			<span style="font-weight: bold;">
+				{% for author in list_authors(book.authors, as_list=True) %}
+					<a href="{{ url_for('search_author', author_name=author)}}">{{ author }}</a>
+					{% if not loop.last %},{% endif %}
+				{% endfor %}
+			</span>
+		</div>
+		<div id="bookInfo">{{ book.pages }} pages | {{ book.publish_date.year }}</div>
+		<div id="bookCategory">{{ book.book_category.name }}</div>
+		{% if book.is_on_shelf() %}
+			<div id="bookStatus" style="color: green;">
+				ON SHELF
+				{% if not current_user.is_anonymous %}
+				| 
+				<button type="button" class="btn btn-flat btn-xs" data-bs-toggle="modal" data-bs-target="#m{{ book.id }}-loan-modal" id="{{ book.id }}-loan-btn">
+					<i class="bi bi-box-arrow-right"></i> LEND OUT
+				</button>
 				{% endif %}
-			</td>
-			<td width="1000px">
-				<div id="bookTitle"> {{ book.full_title.upper() }} </div>
-				<div id="bookAuthor">by: 
-					<span style="font-weight: bold;">
-						{% for author in list_authors(book.authors, as_list=True) %}
-							<a href="{{ url_for('search_author', author_name=author)}}">{{ author }}</a>
-							{% if not loop.last %},{% endif %}
-						{% endfor %}
-					</span>
-				</div>
-				<div id="bookInfo">{{ book.pages }} pages | {{ book.publish_date.year }}</div>
-				<div id="bookCategory">{{ book.book_category.name }}</div>
-				{% if book.is_on_shelf() %}
-					<div id="bookStatus" style="color: green;">
-						ON SHELF | 
-						<button type="button" class="btn btn-flat btn-xs" data-toggle="modal" data-target="#{{ book.id }}-loan-modal" id="{{ book.id }}-loan-btn">
-							<span class="glyphicon glyphicon-transfer" aria-hidden="true"></span> LEND OUT
-						</button>
-					</div>
-				{% elif book.is_on_loan() %}
-					{% with loan = book.get_current_loan() %}
-					<div id="bookStatus" style="color: grey;">
-							ON LOAN |
-							<a data-toggle="modal" data-target="#{{ book.id }}-loan-modal" style="cursor: pointer;">
-							 <span class="glyphicon glyphicon-phone-alt" aria-hidden="true"></span> {{ loan.phone_num }}
-							 <span class="glyphicon glyphicon-user" aria-hidden="true"></span> {{ loan.loanee }}
-							 <span class="glyphicon glyphicon-calendar" aria-hidden="true"></span> {{ loan.in_timestamp.strftime('%Y-%m-%d') }}
-							</a>
-					</div>
-					{% endwith %}
-				{% else %}
-					{% with loan = book.get_current_loan() %}
-					<div id="bookStatus" style="color: #b30000;">
-						MISSING |
-						<a data-toggle="modal" data-target="#{{ book.id }}-loan-modal" style="cursor: pointer;">
-						 <span class="glyphicon glyphicon-phone-alt" aria-hidden="true"></span> {{ loan.phone_num }}
-						 <span class="glyphicon glyphicon-user" aria-hidden="true"></span> {{ loan.loanee }}
-						 <span class="glyphicon glyphicon-calendar" aria-hidden="true"></span> {{ loan.in_timestamp.strftime('%Y-%m-%d') }}
-						</a>
-					</div>
-					{% endwith %}
-				{% endif%}
-			</td>
-			<td>
-				<div>	
-					<button type="button" class="btn btn-flat-black pull-right" data-toggle="modal" data-target="#{{ book.id }}-delete-modal" 
-						id="{{ book.id }}-edit-btn" style="margin-bottom: 10px;">
-						<span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
-					</button>
-					<!-- <form action="{{ url_for('delete', book_isbn=book.isbn_13) }}" method="post">
-	                	{{ form.hidden_tag() }}
-	                	{{ form.submit(value='Delete') }}
-	            	</form> -->
-				</div>
-				<div>
-					<a class="btn btn-flat align-right" href="javascript:populateDefaultFields('#{{ book.id }}-edit-modal');" id="{{ book.id }}-edit-btn">
-						<span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
+			</div>
+		{% elif book.is_on_loan() %}
+			{% with loan = book.get_current_loan() %}
+			<div id="bookStatus" style="color: grey;">
+					ON LOAN 
+					{% if not current_user.is_anonymous %}
+					|
+					<a data-bs-toggle="modal" data-bs-target="#m{{ book.id }}-loan-modal" style="cursor: pointer;">
+						<i class="bi bi-telephone-fill"></i> {{ loan.phone_num }}
+						<i class="bi bi-person-circle"></i> {{ loan.loanee }}
+						<i class="bi bi-calendar-fill"></i> {{ loan.in_timestamp.strftime('%Y-%m-%d') }}
 					</a>
-				</div>
-			</td>
-		</tr>
-	</table>
+					{% endif %}
+			</div>
+			{% endwith %}
+		{% else %}
+			{% with loan = book.get_current_loan() %}
+			<div id="bookStatus" style="color: #b30000;">
+				MISSING |
+				<a data-bs-toggle="modal" data-bs-target="#m{{ book.id }}-loan-modal" style="cursor: pointer;">
+					<i class="bi bi-telephone-fill"></i> {{ loan.phone_num }}
+					<i class="bi bi-person-circle"></i> {{ loan.loanee }}
+					<i class="bi bi-calendar-fill"></i> {{ loan.in_timestamp.strftime('%Y-%m-%d') }}
+				</a>
+			</div>
+			{% endwith %}
+		{% endif%}
+	</td>
+	<td class="col-lg-1">
+		{% if not current_user.is_anonymous %}
+		<div>
+			{% if book.is_on_shelf() %}
+				<button type="button" class="btn btn-flat-black pull-right" data-bs-toggle="modal" data-bs-target="#m{{ book.id }}-delete-modal" 
+					id="b{{ book.id }}-edit-btn" style="margin-bottom: 10px;">
+					<i class="bi bi-x-circle"></i>
+				</button>
+			{% else %}
+				<button type="button" disabled class="btn btn-flat-black pull-right" data-bs-toggle="modal" data-bs-target="#m{{ book.id }}-delete-modal" 
+					id="b{{ book.id }}-edit-btn" style="margin-bottom: 10px;">
+						<i class="bi bi-x-circle"></i>
+				</button>
+			{% endif %}
+			<!-- <form action="{{ url_for('delete', book_isbn=book.isbn_13) }}" method="post">
+				{{ form.hidden_tag() }}
+				{{ form.submit(value='Delete') }}
+			</form> -->
+		</div>
+		<div>
+			<a class="btn btn-flat pull-right" href="javascript:populateDefaultFields('#{{ book.id }}-edit-modal');" id="{{ book.id }}-edit-btn">
+				<i class="bi bi-pencil-square"></i>
+			</a>
+		</div>
+		{% endif %}
+	</td>
+</tr>
 
-	{% if book.is_on_shelf() %}
-		{% include '_loanmodal_shelf.html' %}
-	{% else %}
-		{% include '_loanmodal_loan.html' %}
-	{% endif %}
-
-	{% include '_editmodal.html' %}
-
+{% if book.is_on_shelf() %}
+	{% include '_loanmodal_shelf.html' %}
 	{% include '_deletemodal.html' %}
+{% else %}
+	{% include '_loanmodal_loan.html' %}
+{% endif %}
 
-</div>
+{% include '_editmodal.html' %}
+
+

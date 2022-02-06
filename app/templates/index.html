@@ -1,9 +1,26 @@
 {% extends "base.html" %}
-{% import 'bootstrap/wtf.html' as wtf %}
+{% import 'bootstrap/form.html' as wtf %}
 
 {% block head %}
 	{{ super() }}
 	<style type="text/css">
+		.form-control-label {
+			display: none;
+		}
+
+		.loan-info-card-header {
+			font-family: 'Barlow', sans-serif; 
+			font-size: 14px; 
+			letter-spacing: 0.1em;
+		}
+
+		.loan-info-title {
+			font-family: 'Barlow', sans-serif; 
+			color: black; 
+			font-size: 15px;
+			letter-spacing: 0.1em;
+			margin-bottom: 10px;
+		}
 
 		#bookTitle {
 			font-family: 'Barlow', sans-serif; 
@@ -75,6 +92,40 @@
 	{{ super() }}
 	<script src="https://unpkg.com/libphonenumber-js@1.x/bundle/libphonenumber-min.js"></script>
 	<script>
+
+		// For checking form validity
+		$.fn.isValid = function() {
+			return this[0].checkValidity()
+		}
+
+		$(function() {
+			'use strict'
+
+			$('.needs-validation').each(function () {
+				console.log('Adding onSubmit event hander...', $(this).isValid())
+				$(this).submit(function(event) {
+					console.log(event)
+					if (!$(this).isValid()) {
+						console.log('VALIDATION FAILED.')
+						event.preventDefault()
+						event.stopPropagation()
+					}
+
+					$(this).addClass('was-validated')
+				})
+			})
+
+		})
+
+		function deleteBook(book_isbn) {
+			$.ajax(`/books/${book_isbn}`, 
+			{method: 'DELETE'}).done(function(response) {
+				window.location = response.url
+			}).fail(function() {
+				window.location.reload()
+			})
+		}
+
 		function phoneNumberFormatter(book_id) {
 			elem = '#' + String(book_id) + '-phone_num'
 			const asYouType = new libphonenumber.AsYouType('US')
@@ -85,34 +136,40 @@
 {% endblock %}
 
 {% block app_content %}
-	<div style="margin-bottom: 10px; margin-left: -2em">
-		<div id="headerTitle">VIEW COLLECTION</div>
-		<div id="headerSubtitle">{{ num_books }} BOOKS FOUND IN COLLECTION</div>
+	<div class="col-lg-8">
+		<div style="margin-bottom: 10px; margin-left: -2em">
+			<div id="headerTitle">VIEW COLLECTION</div>
+			<div id="headerSubtitle">{{ num_books }} BOOKS FOUND IN COLLECTION</div>
+		</div>
+	
+		{% if g.search_form %}
+			{% include '_searchbar.html' %}
+		{% endif %}
+	
+	<!-- 	<div class="container"> -->
+	<div class="table-responsive mb-5">
+		<table class="table table-hover">
+		{% for book in books %}
+			{% include '_bookentry.html' %}
+		{% endfor %}
+		</table>
 	</div>
-
-	{% if g.search_form %}
-		{% include '_searchbar.html' %}
-	{% endif %}
-
-<!-- 	<div class="container"> -->
-	{% for book in books %}
-		{% include '_bookentry.html' %}
-	{% endfor %}
-<!-- 	</div> -->
-
-	<nav aria-label="...">
-        <ul class="pager">
-            <li class="previous{% if not prev_url %} disabled{% endif %}">
-                <a href="{{ prev_url or '#' }}">
-                    <span aria-hidden="true">&larr;</span> PREVIOUS BOOKS
-                </a>
-            </li>
-            <li class="next{% if not next_url %} disabled{% endif %}">
-                <a href="{{ next_url or '#' }}">
-                    MORE BOOKS <span aria-hidden="true">&rarr;</span>
-                </a>
-            </li>
-        </ul>
-    </nav>
-
+	<!-- 	</div> -->
+	
+		<nav aria-label="...">
+			<ul class="pagination justify-content-center">
+				<li class="page-item{% if not prev_url %} disabled{% endif %}">
+					<a class="page-link" href="{{ prev_url or '#' }}">
+						<i class="bi bi-arrow-left"></i> PREVIOUS BOOKS
+					</a>
+				</li>
+				<li class="page-item{% if not next_url %} disabled{% endif %}">
+					<a class="page-link" href="{{ next_url or '#' }}">
+						MORE BOOKS <i class="bi bi-arrow-right"></i>
+					</a>
+				</li>
+			</ul>
+		</nav>
+	</div>
+	
 {% endblock %}

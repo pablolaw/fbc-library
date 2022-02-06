@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% import 'bootstrap/wtf.html' as wtf %}
+{% import 'bootstrap/form.html' as wtf %}
 
 {% block scripts %}
 	{{ super() }}
@@ -61,7 +61,7 @@
 			if (data.cover !== '') {
 				cover_url = data['cover']
 			}
-			modal.find('#cover_container').html(`<img src="${cover_url}">`)
+			modal.find('#cover_container').html(`<img width='200px' src="${cover_url}">`)
 			for (let key in data) {
 				modal.find('#' + key)[0].value = data[key];
 			}
@@ -108,52 +108,46 @@
 
 
 {% block app_content %}
-<div style="margin-bottom: 10px; margin-left: -2em">
-	<div id="headerTitle">SCAN BOOKS</div>
-	<div id="headerSubtitle">{{ num_books }} ENTER A 10 OR 13 DIGIT ISBN</div>
-</div>
-<div class="container" style="margin-top: 50px;">
-	<div id="camera_container" class="col-lg-6">
-		<img width="450px" src="{{ url_for('static', filename='isbn_ex.png') }}">
+<div class="col-lg-8">
+	<div style="margin-bottom: 10px; margin-left: -2em">
+		<div id="headerTitle">SCAN BOOKS</div>
+		<div id="headerSubtitle">{{ num_books }} ENTER A 10 OR 13 DIGIT ISBN</div>
 	</div>
-
-	<div class="col-lg-6" style="margin-top: 5em;">
-		<div class="row" style="margin-bottom: 2em;">
-				<button id="scannerBtn" class="btn btn-flat col-lg-7">
-					<span class="glyphicon glyphicon-camera pull-left"></span id="scannerBtnText"><span>SCAN VIA CAMERA</span> 
+	<div class="row justify-content-between align-items-top">
+		<div id="camera_container" class="col-lg-6">
+			<img width="450px" src="{{ url_for('static', filename='isbn_ex.png') }}">
+		</div>
+		<div class="col-lg-5 mt-5">
+			<div class="row" style="margin-bottom: 2em;">
+				<button id="scannerBtn" class="btn btn-flat mb-3 row justify-content-between">
+					<i class="bi bi-webcam-fill"></i> <span id="scannerBtnText"> SCAN VIA CAMERA</span>
 				</button>
-		</div>
-
-		<div class="row">
-			<div class="strike col-lg-7">
-   				<span>OR</span>
-   			</div>
-		</div>
-
-		<div class="row">
-			<div class="col-lg-8">
+				<div class="strike">
+					<span>OR</span>
+				</div>
 				<form class="form form-horizontal form_label" id="lookUpForm">
-
-				<div class="row">
-					<label for="name" class="form-label col-sm-2 control-label">ISBN</label>
-				</div>
-
-				<div class="row">
-					<div class="col-lg-8">
-						{{ g.lookUpForm.isbn(class='form-control') }}
-						{% for error in g.lookUpForm.isbn.errors %}
-							<span style="color: red;">[{{ error }}]</span>
-						{% endfor %}
+	
+					<div class="row">
+						<label for="name" class="form-label col-sm-2 control-label">ISBN</label>
 					</div>
-					<div class="col-lg-2">
-						<button type=submit class="btn btn-flat">Look Up</button>
+	
+					<div class="row">
+						<div class="col-lg-9">
+							{{ g.lookUpForm.isbn(class='form-control') }}
+							{% for error in g.lookUpForm.isbn.errors %}
+								<span style="color: red;">[{{ error }}]</span>
+							{% endfor %}
+						</div>
+						<div class='col-auto'>
+							<button type=submit class="btn btn-flat btn-sm">Look Up</button>
+						</div>
 					</div>
-				</div>
-			</form>
+				</form>
 			</div>
 		</div>
 	</div>
 </div>
+
 
 {% include '_entermodal.html' %}
 

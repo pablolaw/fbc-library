@@ -1,83 +1,72 @@
 
 <div class="modal" id="{{ book.id }}-edit-modal" tabindex="-1" role="dialog" aria-labelledby="{{ book.id }}-edit-modal">
-		<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-dialog modal-xl" role="document">
 			<div class="modal-content">
-				<div class="modal-header">
-        				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        				<div id="modalHeader" class="modal-title">EDIT BOOK INFORMATION</div>
-        				<div id="modalSubtitle" class="modal-title">CHANGE THE DESIRED FIELDS IN THE FORM BELOW</div>
-      			</div>
+				<div class="modal-header justify-content-between">
+					<div style="display: block;">
+						<div id="modalHeader" class="modal-title">EDIT BOOK INFORMATION</div>
+						<div id="modalSubtitle" class="modal-title">CHANGE THE DESIRED FIELDS IN THE FORM BELOW.</div>
+					</div>
+					<div>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+				  </div>
 
 
       			<form class="form form-horizontal" method="post" action="{{ url_for('edit', book_isbn=book.isbn_13) }}">
       				{{ g.editForm.hidden_tag() }}
-      				<div class="modal-body">
+      				<div class="modal-body" style="width: 60vw;">
+						  <div class="row g-3 justify-content-center align-items-center mb-5">
+							  <div class="col-sm-3">
+								  <img width="150px" src="{{ book.cover }}">
+							  </div>
+							  <div class="col-sm-6">
+								<div class="form-floating">
+									  {{ g.editForm.full_title(class='form-control', default=book.full_title) }}
+									  {{ g.editForm.full_title.label }}
+									  {% for error in g.editForm.full_title.errors %}
+										  <span style="color: red;">[{{ error }}]</span>
+									  {% endfor %}
+								</div>
 
-      					<div class="row col-xs-offset-2">
+								<div class="form-floating">
+									  {{ g.editForm.authors(class='form-control', default=list_authors(book.authors)) }}
+									  {{ g.editForm.authors.label }}
+									  {% for error in g.editForm.authors.errors %}
+										  <span style="color: red;">[{{ error }}]</span>
+									  {% endfor %}
+								</div>
 
-	      					<div class="col-lg-3">
-	      						<img width="150px" src="{{ book.cover }}">
-	      					</div>
+								<div class="form-floating">
+									  {{ g.editForm.pages(class='form-control', default=book.pages) }}
+									  {{ g.editForm.pages.label }}
+									  {% for error in g.editForm.pages.errors %}
+										  <span style="color: red;">[{{ error }}]</span>
+									  {% endfor %}
+								</div>
 
-	      					<div class="col-lg-9">
+								<div class="form-floating">
+									  {{ g.editForm.publish_date(class='form-control', default=book.publish_date.year) }}
+									  {{ g.editForm.publish_date.label }}
+									  {% for error in g.editForm.publish_date.errors %}
+										  <span style="color: red;">[{{ error }}]</span>
+									  {% endfor %}
+								</div>
 
-		      					<div class="form-group">
-		      						<label for="full_title" class="form-label col-sm-3 control-label" style="text-align: left;">Title</label>
-		      						<div class="col-sm-6">
-				    					{{ g.editForm.full_title(class='form-control', default=book.full_title) }}
-				    					{% for error in g.editForm.full_title.errors %}
-											<span style="color: red;">[{{ error }}]</span>
-										{% endfor %}
-				    				</div>
-		      					</div>
+								<div class="form-floating">
+									  {{ g.editForm.category(class='form-control', default=book.book_category.name) }}
+									  {{ g.editForm.category.label }}
+									  {% for error in g.editForm.category.errors %}
+										  <span style="color: red;">[{{ error }}]</span>
+									  {% endfor %}
+								</div>
 
-		      					<div class="form-group">
-		      						<label for="authors" class="form-label col-sm-3 control-label" style="text-align: left;">Authors</label>
-		      						<div class="col-sm-6">
-				    					{{ g.editForm.authors(class='form-control', default=list_authors(book.authors)) }}
-				    					{% for error in g.editForm.authors.errors %}
-											<span style="color: red;">[{{ error }}]</span>
-										{% endfor %}
-				    				</div>
-		      					</div>
-
-		      					<div class="form-group">
-		      						<label for="pages" class="form-label col-sm-3 control-label" style="text-align: left;">Pages</label>
-		      						<div class="col-sm-6">
-				    					{{ g.editForm.pages(class='form-control', default=book.pages) }}
-				    					{% for error in g.editForm.pages.errors %}
-											<span style="color: red;">[{{ error }}]</span>
-										{% endfor %}
-				    				</div>
-		      					</div>
-
-		      					<div class="form-group">
-		      						<label for="publish_date" class="form-label col-sm-3 control-label" style="text-align: left;">Date of Publication</label>
-		      						<div class="col-sm-6">
-				    					{{ g.editForm.publish_date(class='form-control', default=book.publish_date.year) }}
-				    					{% for error in g.editForm.publish_date.errors %}
-											<span style="color: red;">[{{ error }}]</span>
-										{% endfor %}
-				    				</div>
-		      					</div>
-
-		      					<div class="form-group">
-		      						<label for="category" class="form-label col-sm-3 control-label" style="text-align: left;">Category</label>
-		      						<div class="col-sm-6">
-				    					{{ g.editForm.category(class='form-control', default=book.book_category.name) }}
-				    					{% for error in g.editForm.category.errors %}
-											<span style="color: red;">[{{ error }}]</span>
-										{% endfor %}
-				    				</div>
-		      					</div>
-
-	      					</div>
-
-      					</div>
+							  </div>
+						  </div>
       				</div>
 
       				<div class="modal-footer">
-        				<button type="button" class="btn btn-flat" data-dismiss="modal">Close</button>
+        				<button type="button" class="btn btn-flat" data-bs-dismiss="modal">Close</button>
         				<button type=submit class="btn btn-flat-black">Update</button>
       				</div>
 

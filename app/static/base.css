@@ -1,13 +1,20 @@
-
 input {
 	font-family: 'Barlow', sans-serif;
 	margin-top: 0;
 	margin-right: 0;
 	margin-left: 0;
 	box-shadow: none !important;
-	border: 0 !important;
-	border-bottom: 1px solid #ddd !important;
+	border: none !important;
+	border-bottom: 1px grey solid !important;
+	border-radius: 0% !important;
 }
+
+ select {
+	box-shadow: none !important;
+	border: none !important;
+	border-bottom: 1px grey solid !important;
+	border-radius: 0% !important;
+ }
 
 a {
 	color: #998751e7;
@@ -18,7 +25,7 @@ a:hover {
 }
 
 #logo {
-	margin-top: 20px; 
+	margin-top: 8px; 
 	padding-right: 20px; 
 	border-right: 3px grey solid;
 }
@@ -144,6 +151,41 @@ a:hover {
   text-align: center;
 }
 
+.page-link {
+	font-family: 'Barlow', sans-serif;
+	color: black;
+}
+
+.page-link:hover {
+	background-color: rgb(223, 223, 223);
+	color: black;
+}
+
+#logo-text {
+	font-family: 'Noto Sans', sans-serif;
+	font-weight: 700;
+	color: black;
+	font-size: 1.2em;  
+	letter-spacing: 0.1em;
+}
+
+.nav-item {
+	font-family: 'Noto Sans', sans-serif;
+	font-weight: 700;
+	letter-spacing: 0.1em;
+	font-size: .9em;
+}
+
+
+.btn-xs {
+	font-size: 11px;
+	padding-top: 1px;
+	padding-bottom: 1px;
+	padding-right: 6px;
+	padding-left: 6px;
+	border-radius: 0;
+}
+
 @media screen and (min-width: 768px) { 
   .modal:before {
     display: inline-block;
@@ -151,6 +193,16 @@ a:hover {
     content: " ";
     height: 100%;
   }
+}
+
+.no-gutter > [class*="col-"] {
+	padding-right: 0;
+	padding-left: 5px;
+  }
+
+select {
+	border: none;
+	outline: 0px;
 }
 
 .modal-dialog {

@@ -1,11 +1,10 @@
 {% extends "base.html" %}
-{% import 'bootstrap/wtf.html' as wtf %}
+{% import 'bootstrap/form.html' as wtf %}
 
 {% block head %}
 	{{ super() }}
 	<style type="text/css">
 		#actions-header {
-            margin-top: 1.5em;
             font-family: 'Montserrat', sans-serif; 
 			color: black; 
 			font-size: 25px; 
@@ -90,73 +89,144 @@
 			font-size: 13px; 
 			letter-spacing: 0.1em;
         }
+
+		#empty-text {
+			font-family: 'Barlow', sans-serif;
+			letter-spacing: 0.1em;
+			font-size: 1.2em;
+			color: grey;
+		}
 	</style>
 {% endblock %}
 
+{% block scripts %}
+	{{ super() }}
+	<script src="https://unpkg.com/libphonenumber-js@1.x/bundle/libphonenumber-min.js"></script>
+	<script>
+		function phoneNumberFormatter() {
+			elem = '#phone_num'
+			const asYouType = new libphonenumber.AsYouType('US')
+			const formattedPhoneNum = asYouType.input($(elem)[0].value)
+			$(elem)[0].value = formattedPhoneNum
+		}
+
+		function deleteBook(book_isbn) {
+			$.ajax(`/books/${book_isbn}`, 
+			{method: 'DELETE'}).done(function(response) {
+				window.location = response.url
+			}).fail(function() {
+				window.location.reload()
+			})
+		}
+	</script>
+{% endblock %}
+
 {% block app_content %}
-    <div id="actions-panel" class="container-fluid" style="background-color: #cfc8be;">
-        <div class="row">
-            <div class="col-lg-3 col-lg-offset-1" style="margin-top: 3em; margin-bottom: 2em;">
-                <img width="150px" src="{{ url_for('static', filename='lamp.png')}}">
-            </div>
-
-            <div class="col-lg-7" style="margin-bottom: 2em;">
-                <div class="row">
-                    <div id="actions-header">What would you like to do?</div>
-                </div>
-
-                <div class="col-lg-10 col-lg-offset-1">
-                    <div class="row" style="margin-top: 1em; margin-bottom: 1em;">
-                        <a href="{{ url_for('index') }}">
-                            <button href="{{ url_for('index') }}" class="col-lg-11 btn btn-flat-black action-btn">
-                                <span class="glyphicon glyphicon-book"></span><span style="margin-left: 10px;">VIEW BOOKS IN COLLECTION</span>
-                            </button>
-                        </a>
-                    </div>
-                    <div class="row" style="margin-bottom: 1em;">
-                        <a href="{{ url_for('enter') }}">
-                            <button  class="col-lg-11 btn btn-flat-black action-btn">
-                                <span class="glyphicon glyphicon-barcode"></span><span style="margin-left: 10px;">ENTER BOOKS INTO COLLECTION</span>
-                            </button>
-                        </a>
-                    </div>
-                    <div class="row" style="margin-bottom: 1em;">
-                        <button disabled class="col-lg-11 btn btn-flat-black action-btn">
-                            <span class="glyphicon glyphicon-transfer"></span><span style="margin-left: 10px;">LOOK UP LOANS BY CONTACT INFO</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div style="margin-top: 5em; margin-bottom: 2em; margin-left: -2em">
-		<div id="headerTitle"> LOANS EXPIRING IN < 1 WEEK </div>
-		<div id="headerSubtitle">{{ exp_loans['total'] }} LOANS(S) SOON EXPIRING</div>
+<div class="col-sm-8">
+	<div class="row justify-content-center my-2">
+		<div id="actions-panel" style="background-color: #cfc8be;">
+			<div class="row justify-content-center align-items-center">
+				<div class="col-sm-3 my-5 text-center">
+					<img width="150px" src="{{ url_for('static', filename='lamp.png')}}">
+				</div>
+				<div class="col-sm-7">
+					<div class="row justify-content-center my-2">
+						<div id="actions-header" class="col-sm-10">What would you like to do?</div>
+					</div>
+					<div class="row justify-content-center gx-0">
+						<div class="col-sm-6">
+							<a href="{{ url_for('index') }}">
+								<button href="{{ url_for('index') }}" class="btn btn-flat-black action-btn btn-sm">
+									<span class="glyphicon glyphicon-book"></span><span class="mx-2">VIEW BOOKS IN COLLECTION</span>
+								</button>
+							</a>
+						</div>
+						<div class="col-sm-6">
+							<a href="{{ url_for('enter') }}">
+								<button class="btn btn-flat-black action-btn btn-sm">
+									<span class="glyphicon glyphicon-barcode"></span><span class="mx-1">ENTER BOOKS INTO COLLECTION</span>
+								</button>
+							</a>
+						</div>
+						
+						
+						<!-- <div class="col-sm-5">
+							<button disabled class="btn btn-flat-black action-btn btn-sm">
+								<span class="glyphicon glyphicon-transfer"></span><span style="margin-left: 10px;">LOOK UP LOANS BY CONTACT INFO</span>
+							</button>
+						</div> -->
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
 
-    {% for loan in exp_loans['items'] %}
+	<div style="margin-top: 5em; margin-bottom: 2em; margin-left: -2em">
+		<div id="headerTitle">SEARCH LOANS BY PHONE NUMBER</div>
+		<div id="headerSubtitle">LOOK UP ACTIVE AND PAST LOANS ATTACHED TO A PHONE NUMBER</div>
+	</div>
+
+	<form class="form" method="get" action="">
+		{{ loan_phone_form.hidden_tag() }}
+		<div class="row justify-content-center align-items-end">
+			<div class="col-sm-5">
+				<div class="form-floating">
+					{{ loan_phone_form.phone_num(class='form-control', onkeydown='phoneNumberFormatter()', placeholder="") }}
+					{{ loan_phone_form.phone_num.label }}
+				</div>
+			</div>
+			<div class="col-sm-2">
+				<button type=submit class="btn btn-flat btn-sm">Look Up</button>
+			</div>
+		</div>
+	</form>
+
+
+
+	<div style="margin-top: 5em; margin-bottom: 2em; margin-left: -2em">
+		<div id="headerTitle"> LOANS EXPIRING IN < 1 WEEK </div>
+		<div id="headerSubtitle">{{ exp_loans['total'] }} LOAN(S) EXPIRING SOON</div>
+	</div>
+
+	{% if not exp_loans['items'] %}
+	<div class="row justify-content-center align-items-center">
+		<div class="card text-dark bg-light mb-3">
+			<div class="card-body">
+				<div class="row justify-content-center align-items-center">
+					<div class="col-sm-2 my-4 text-center">
+						<img width="100px" src="{{ url_for('static', filename='empty.png') }}">
+					</div>
+				</div>
+				<div class="row justify-content-center align-items-center">
+					<span id="empty-text" class="col-sm-6 mb-4 mx-3 text-center"> NO EXPIRING LOANS AT THE MOMENT</span>
+				</div>
+				
+			</div>
+		</div>
+	</div>
+	{% endif %}
+
+	{% for loan in exp_loans['items'] %}
 			{% with book = loan.loaned_book %}
 
 			<div>
 				{% if not loan.is_overdue() %}
-				<div class="panel panel-success">
-					<div class="panel-heading">Status: <span style="font-weight: bold;">AWAY ON LOAN</span></div>
+				<div class="card text-dark border-success mb-3">
+					<div style="background-color: #d1e7dd; color: #0f5132;" class="card-header">Status: <span style="font-weight: bold;">AWAY ON LOAN</span></div>
 				{% else %}
-				<div class="panel panel-danger">
-					<div class="panel-heading">Status: <span style="font-weight: bold;">OVERDUE</span></div>
+				<div class="card text-dark border-danger mb-3">
+					<div style="background-color: #f1c3c3; color: #7c0101;" class="card-header">Status: <span style="font-weight: bold;">OVERDUE</span></div>
 				{% endif %}
 
 				
 
-					<div class="panel-body">
-						<div style="border-left: 3px black solid; padding-left: 15px;">
-							<div class="row">
-								<div class="col-lg-2">
-									<img width="100px" src="{{ book.cover }}">
+					<div class="card-body">
+						<div class="row justify-content-between">
+								<div class="col-sm-2">
+									<img width="125px" style="border-left: 3px black solid; padding-left: 15px;" src="{{ book.cover }}">
 								</div>
 
-								<div class="col-lg-5">
+								<div class="col-sm-5">
 									<div id="bookTitle"> {{ book.full_title.upper() }} </div>
 									<div id="bookAuthor">by: 
 										<span style="font-weight: bold;">
@@ -173,22 +243,24 @@
 									</div>
 								</div>
 
-								<div class="col-lg-5">
+								<div class="col-sm-5">
 									<div class="row">
-										<form class="form col-lg-offset-1" method="post" action="{{ url_for('extend_loan', book_isbn=book.isbn_13) }}">
+										<form class="form" method="post" action="{{ url_for('extend_loan', book_isbn=book.isbn_13) }}">
 											{{ g.editForm.hidden_tag() }}
 											<div class="row">
-												<label for="loan_duration_length" class="form-label col-lg-6">Extend Loan for:</label> 
+												<label for="loan_duration_length" class="form-label col-sm-6">Extend Loan for:</label> 
 											</div>
 											
-											<div class="row">
-												<div class="col-lg-3" style="padding-right: 0px;">
+											<div class="row justify-content-evenly align-items-end gx-0">
+												<div class="col-sm-4">
 													{{ g.loan_extend_form.loan_duration_length(class='form-control') }}
 												</div>
-												<div class="col-lg-4 dropdown">
+												<div class="col-sm-4 dropdown">
 													{{ g.loan_extend_form.loan_duration_unit(class='form-control') }}
 												</div>
-												<button type=submit class="btn btn-flat">Extend</button>
+												<div class="col-sm-3">
+													<button type=submit class="btn btn-flat btn-sm">Extend</button>
+												</div>
 											</div>
 										</form>
 									</div>
@@ -198,18 +270,17 @@
    									</div>
 
 									
-									<div class="row">
-										<form class="form" method="post" action="{{ url_for('close_loan', book_isbn=book.isbn_13) }}">
+									<div class="row justify-content-center">
+										<form class="form col-sm-8" method="post" action="{{ url_for('close_loan', book_isbn=book.isbn_13) }}">
 											{{ g.loan_close_form.hidden_tag() }}
-											<div class="col-lg-offset-2">
-												<button type=submit class="btn btn-flat">Return Book and Close Loan</button>
+											<div>
+												<button type=submit class="btn btn-flat btn-sm">Return Book and Close Loan</button>
 											</div>
 										</form>
 										
 									</div>
 								</div>
 							</div>
-						</div>
 					</div>
 
 				</div>
@@ -218,18 +289,20 @@
 			{% endwith %}
 	{% endfor %}
 
-    <nav aria-label="...">
-        <ul class="pager">
-            <li class="previous{% if not prev_url %} disabled{% endif %}">
-                <a href="{{ prev_url or '#' }}">
-                    <span aria-hidden="true">&larr;</span> PREVIOUS BOOKS
-                </a>
-            </li>
-            <li class="next{% if not next_url %} disabled{% endif %}">
-                <a href="{{ next_url or '#' }}">
-                    MORE BOOKS <span aria-hidden="true">&rarr;</span>
-                </a>
-            </li>
-        </ul>
-    </nav>
+	<nav aria-label="...">
+		<ul class="pagination justify-content-center">
+			<li class="page-item{% if not prev_url %} disabled{% endif %}">
+				<a class="page-link" href="{{ prev_url or '#' }}">
+					<i class="bi bi-arrow-left"></i> PREVIOUS BOOKS
+				</a>
+			</li>
+			<li class="page-item{% if not next_url %} disabled{% endif %}">
+				<a class="page-link" href="{{ next_url or '#' }}">
+					MORE BOOKS <i class="bi bi-arrow-right"></i>
+				</a>
+			</li>
+		</ul>
+	</nav>
+
+</div>
 {% endblock %}

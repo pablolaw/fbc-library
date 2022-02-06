@@ -104,14 +104,13 @@
 			let ascending=true;
 			$('#sortButton').click(
 				function(event) {
-					console.log('I was clicked!')
 					if (ascending) {
 						sortTable('#past_loans_table', 'desc')
-						$('#sortButton span')[0].className = 'glyphicon glyphicon-sort-by-attributes-alt'
+						$('#sortButton i')[0].className = 'bi bi-sort-numeric-up'
 						ascending = false
 					} else {
 						sortTable('#past_loans_table', 'asc')
-						$('#sortButton span')[0].className = 'glyphicon glyphicon-sort-by-attributes'
+						$('#sortButton i')[0].className = 'bi bi-sort-numeric-down'
 						ascending = true
 					}
 				})
@@ -139,43 +138,48 @@
 {% endblock %}
 
 {% block app_content %}
-	<div style="margin-bottom: 10px; margin-left: -2em">
-		<div id="headerTitle">LOAN HISTORY</div>
-		<div id="headerSubtitle">VIEW CURRENT AND PAST LOANS FOR THIS BOOK</div>
-	</div>
-
-	<div class="panel panel-default" style="margin-top: 2em;">
-		<div class="panel-body">
-			<div class="col-lg-offset-4" style="border-left: 3px black solid; padding-left: 15px;">
-				<div class="row">
-					<div class="col-lg-2" style="margin-right: 10px;">
-						<img width="100px" src="{{ book.cover }}">
-					</div>
-
-					<div class="col-lg-7">
-						<div id="bookTitle"> {{ book.full_title.upper() }} </div>
-						<div id="bookAuthor">by: 
-							<span style="font-weight: bold;">
-								{% for author in list_authors(book.authors, as_list=True) %}
-										{{ author }}{% if not loop.last %},{% endif %}
-								{% endfor %}
-							</span>
+	<div class="col-sm-8">
+		<div style="margin-bottom: 10px; margin-left: -2em">
+			<div id="headerTitle">LOAN HISTORY</div>
+			<div id="headerSubtitle">VIEW CURRENT AND PAST LOANS FOR THIS BOOK</div>
+		</div>
+		<div class="card" style="margin-bottom: 1em">
+			<div class="card-body"> 
+				<div class="row justify-content-end">
+		
+					<div>
+						<div class="row ml-2 justify-content-center align-items-center">
+							<div style="border-left: 3px black solid; padding-left: 15px;" class="col-auto">
+								<img width="100px" src="{{ book.cover }}">
+							</div>
+			
+							<div class="col-auto">
+								<div id="bookTitle"> {{ book.full_title.upper() }} </div>
+								<div id="bookAuthor">by: 
+									<span style="font-weight: bold;">
+										{% for author in list_authors(book.authors, as_list=True) %}
+												{{ author }}{% if not loop.last %},{% endif %}
+										{% endfor %}
+									</span>
+								</div>
+								<div id="bookInfo">{{ book.pages }} pages | {{ book.publish_date.year }}</div>
+								<div id="bookCategory">{{ book.book_category.name }}</div>
+											
+							</div>
 						</div>
-						<div id="bookInfo">{{ book.pages }} pages | {{ book.publish_date.year }}</div>
-						<div id="bookCategory">{{ book.book_category.name }}</div>
 					</div>
+					
 				</div>
 			</div>
 		</div>
-	</div>
 
-	{% if curr_loan %}
+		{% if curr_loan %}
 		<div style="margin-top: 5em;">
 			<div class="loan-type">CURRENT LOAN</div>
 			{% if not curr_loan.is_overdue() %}
-				<div class="panel panel-success">
-					<div class="panel-heading">Status: <span style="font-weight: bold;">AWAY ON LOAN</span></div>
-					<table class="table" id="current_loan_table">
+				<div class="card text-dark border-success">
+					<div style="background-color: #d1e7dd; color: #0f5132;" class="card-header">Status: <span style="font-weight: bold;">AWAY ON LOAN</span></div>
+					<table class="table mx-1" id="current_loan_table">
 						<tr>
 							<th>CONTACT PHONE</th>
 							<th>CONTACT NAME</th>
@@ -191,9 +195,9 @@
 					</table>
 				</div>
 			{% else %}
-				<div class="panel panel-danger" id="current_loan_table">
-					<div class="panel-heading">Status: <span style="font-weight: bold;">OVERDUE</span></div>
-					<table class="table">
+			<div class="card text-dark border-danger mb-3">
+				<div style="background-color: #f1c3c3; color: #7c0101;" class="card-header">Status: <span style="font-weight: bold;">OVERDUE</span></div>
+					<table class="table mx-1">
 						<tr>
 							<th>Contact Phone</th>
 							<th>Contact Name</th>
@@ -209,42 +213,48 @@
 					</table>
 				</div>
 			{% endif %}
-		<div>
-	{% endif %}
+			<div>
+		{% endif %}
 
-	<div style="margin-top: 5em;">
-		<div class="row">
-			<div class="col-lg-3">
-				<div class="loan-type">PAST LOANS</div>
-				<div class="loan-result-header">{{ past_loans['count'] }} PAST LOAN(S) FOUND</div>
-			</div>
-			<div class="col-lg-2 pull-right col-lg-pull-1">
-				<button id="sortButton" type="button" class="btn btn-flat" style="margin-top: 15px; color: black; border-color: white;">
-					<span class="glyphicon glyphicon-sort-by-attributes" aria-hidden="true"></span> SORT BY RETURN DATE
+		<div style="margin-top: 5em;">
+			<div class="row justify-content-between">
+				<div class="col-lg-3">
+					<div class="loan-type">PAST LOANS</div>
+					<div class="loan-result-header">{{ past_loans['count'] }} PAST LOAN(S) FOUND</div>
+				</div>
+				<button id="sortButton" type="button" class="col-sm-3 btn" style="font-family: 'Barlow', sans-serif; letter-spacing: 0.05em; margin-top: 15px; border-color: white;">
+					<i style="font-size: 1.4em;" class="bi bi-sort-numeric-down"></i> SORT BY RETURN DATE
 				</button>
 			</div>
-		</div>
-		<table class="table table-bordered" id="past_loans_table">
-			<thead>
-				<tr>
-					<th>CONTACT PHONE</th>
-					<th>CONTACT NAME</th>
-					<th>DATE TAKEN OUT</th>
-					<th>DATE RETURNED </th>
-				</tr>
-			</thead>
-			<tbody>
-				{% for loan in past_loans['items'] %}
+			<table class="table table-bordered" id="past_loans_table">
+				<thead>
 					<tr>
-						<td><a href="{{ url_for('loanee_history', phone_num=loan.phone_num)}}">{{ loan.phone_num }}</a></td>
-						<td>{{ loan.loanee }}</td>
-						<td>{{ loan.out_timestamp.strftime('%Y-%m-%d') }}</td>
-						<td>{{ loan.in_timestamp.strftime('%Y-%m-%d') }}</td>
+						<th>CONTACT PHONE</th>
+						<th>CONTACT NAME</th>
+						<th>DATE TAKEN OUT</th>
+						<th>DATE RETURNED </th>
 					</tr>
-				{% endfor %}
-			</tbody>
-		</table>
+				</thead>
+				<tbody>
+					{% for loan in past_loans['items'] %}
+						<tr>
+							<td><a href="{{ url_for('loanee_history', phone_num=loan.phone_num)}}">{{ loan.phone_num }}</a></td>
+							<td>{{ loan.loanee }}</td>
+							<td>{{ loan.out_timestamp.strftime('%Y-%m-%d') }}</td>
+							<td>{{ loan.in_timestamp.strftime('%Y-%m-%d') }}</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
 	</div>
+</div>
+	
+
+	
+
+	
+	
 
 <!-- 	<nav aria-label="...">
         <ul class="pager btn-flat">

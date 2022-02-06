@@ -1,82 +1,81 @@
 
-<div class="container form_label" style="margin-top: 20px;">
-			<div class="row">
-				<form class="form form-horizontal" method="post" action="{{ url_for('search') }}">
-					<div class="form-group">
-						{{ g.search_form.hidden_tag() }}
+<div class="form_label" style="margin-top: 20px;">
+	<form class="form form-horizontal" method="post" action="{{ url_for('search') }}">
+		<div class="row justify-content-between form-group g-0">
+			{{ g.search_form.hidden_tag() }}
 
-						<div class="col-lg-2" style="margin-right: -8em; margin-top: 6px;">
-							<span>Search by: </span>
+			<div class="col-auto" style="margin-top: 6px; font-size: 16px;">
+				Search by:
+			</div>
+			<div class="col-sm-2">
+				<div id="searchTypeDropdown" class="selectpicker">{{ g.search_form.search_type(class='form-control') }}</div>
+			</div>
+			<div class="col-sm-7">
+				{{ g.search_form.q(class='form-control', placeholder=g.search_form.q.label.text) }}
+			</div>
+			<div class="col-sm-1">
+				<button type=submit class="btn btn-outline-secondary"><i class="bi bi-search"></i></button>
+			</div>
+		</div>
+	</form>
+	<div class="row justify-content-end my-2">
+		<div class="col-sm-2">
+			<button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#advancedSearchModal">Advanced Search</button>
+		</div>
+	</div>
+</div>
+
+	<div class="modal" id="advancedSearchModal" tabindex="-1" role="dialog">
+		<div class="modal-dialog modal-lg" role="document">
+			<div class="modal-content" style="width: 60vw;">
+				<div class="modal-header justify-content-between">
+					<div style="display: block;">
+						<div id="modalHeader" class="modal-title">ADVANCED SEARCH</div>
+						<div id="modalSubtitle" class="modal-title">USE THE FORM TO CONSTRUCT A QUERY.</div>
+					</div>
+					<div>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+				</div>
+				
+				<form class="form form-horizontal" method="post" action="{{ url_for('advanced_search') }}">
+					<div class="modal-body">
+						<div class="row g-3 justify-content-center align-items-center mb-5">
+							{{ g.as_form.hidden_tag() }}
+							<div class="col-sm-3 ">
+								<image width="200px" src="{{ url_for('static', filename='advanced-search-icon.jpeg')}}"></image>
+							</div>
+
+							<div class="col-sm-6">
+								<div class="form-floating mb-3">
+									{{ g.as_form.full_title(class='form-control') }}
+									{{ g.as_form.full_title.label }}
+								</div>
+								<div class="form-floating mb-3">
+									{{ g.as_form.authors(class='form-control') }}
+									{{ g.as_form.authors.label }}
+								</div>
+
+								<div class="form-floating mb-3">
+									{{ g.as_form.publish_date(class='form-control') }}
+									{{ g.as_form.publish_date.label }}
+								</div>
+
+								<div class="form-floating mb-3">
+									{{ g.as_form.category(class='form-control') }}
+									{{ g.as_form.category.label }}
+								</div>
+							</div>
 						</div>
-						<div class="col-lg-2">
-							<div id="searchTypeDropdown" class="dropdown">{{ g.search_form.search_type(class='form-control') }}</div>
-						</div>
-						<div class="col-xs-6" style="margin-left: -1em;">
-							{{ g.search_form.q(class='form-control', placeholder=g.search_form.q.label.text) }}
-						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-flat" data-bs-dismiss="modal">Close</button>
 						<button type=submit class="btn btn-outline-secondary">
-							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
-  								<path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
-  							</svg>
+							<i class="bi bi-search"></i>
 						</button>
 					</div>
 				</form>
-			</div>
-			<div class="row" style="margin-top: -0.4em; margin-bottom: 1em;">
-				<a class="col-lg-offset-8" data-toggle="modal" data-target="#advancedSearchModal" style="cursor: pointer;">Advanced Search</a>
-			</div>
-		</div>
 
-		<div class="modal" id="advancedSearchModal" tabindex="-1" role="dialog">
-  			<div class="modal-dialog modal-lg" role="document">
-    			<div class="modal-content">
-      				<div class="modal-header">
-        				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        				<div id="modalHeader" class="modal-title">ADVANCED SEARCH</div>
-        				<div id="modalSubtitle" class="modal-title">USE THE FORM TO CONSTRUCT A QUERY</div>
-      				</div>
-      				
-    				<form class="form form-horizontal" method="post" action="{{ url_for('advanced_search') }}">
-    					<div class="modal-body">
-    						<div class="col-xs-offset-3">
-	    						{{ g.as_form.hidden_tag() }}
-
-		    					<div class="form-group">
-		    						<label for="full_title" class="col-sm-2 control-label">Title</label>
-		    						<div class="col-sm-6">
-		    							{{ g.as_form.full_title(class='form-control') }}
-		    						</div>
-		    					</div>
-		    					<div class="form-group">
-		    						<label for="authors" class="col-sm-2 control-label">Author(s)</label>
-		    						<div class="col-sm-6">
-		    							{{ g.as_form.authors(class='form-control') }}
-		    						</div>
-		    					</div>
-		    					<div class="form-group">
-		    						<label for="publish_date" class="col-sm-2 control-label">Year of Publication</label>
-		    						<div class="col-sm-6">
-		    							{{ g.as_form.publish_date(class='form-control') }}
-		    						</div>
-		    					</div>
-		    					<div class="form-group">
-		    						<label for="category" class="col-sm-2 control-label">Category</label>
-		    						<div class="col-sm-6">
-		    							{{ g.as_form.category(class='form-control') }}
-		    						</div>
-		    					</div>
-	    					</div>
-    					</div>
-    					<div class="modal-footer">
-	        				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-	        				<button type=submit class="btn btn-outline-secondary">
-								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
-	  								<path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
-	  							</svg>
-							</button>
-      					</div>
-    				</form>
-
-    			</div><!-- /.modal-content -->
-  			</div><!-- /.modal-dialog -->
-		</div><!-- /.modal -->
+			</div><!-- /.modal-content -->
+		</div><!-- /.modal-dialog -->
+	</div><!-- /.modal -->

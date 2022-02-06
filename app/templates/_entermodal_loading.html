@@ -1,14 +1,17 @@
-<div class="modal-content">
-    <div class="modal-header">
-        <div id="modalHeader" class="modal-title">LOADING...</div>
-        <div id="modalSubtitle" class="modal-title">Filling out the book information for you...</div>
+<div class="modal-content" style="width: 50vw;">
+    <div class="modal-header justify-content-between">
+        <div style="display: block;">
+            <div id="modalHeader" class="modal-title">LOADING...</div>
+            <div id="modalSubtitle" class="modal-title">Filling out the book information for you...</div>
+        </div>
+        <div>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
     </div>
     <div class="modal-body">
-        <div class="container">
-            <div class="row" style="margin-top: 5em; margin-bottom: 5em;">
-                <div class="col-lg-5 col-lg-offset-4">
-                    <img src="{{ url_for('static', filename='Book.gif') }}">
-                </div>
+        <div class="row justify-content-center align-items-center my-5">
+            <div class="col-lg-6 text-center">
+                <img src="{{ url_for('static', filename='Book.gif') }}">
             </div>
         </div>
     </div>

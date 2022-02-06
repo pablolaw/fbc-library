@@ -1,28 +1,37 @@
 
-<div class="panel panel-default" style="margin-bottom: 0px;">
-	<div class="panel-body"> 
-		<div class="col-lg-offset-4" style="border-left: 3px black solid; padding-left: 15px;">
-			<div class="row">
-				<div class="col-lg-2" style="margin-right: 10px;">
-					<img width="100px" src="{{ book.cover }}">
-				</div>
+<div class="card" style="margin-bottom: 1em; width: 50vw;">
+	<div class="card-body"> 
+		<div class="row justify-content-end">
 
-				<div class="col-lg-7">
-					<div id="bookTitle"> {{ book.full_title.upper() }} </div>
-					<div id="bookAuthor">by: 
-						<span style="font-weight: bold;">
-							{% for author in list_authors(book.authors, as_list=True) %}
-									{{ author }}{% if not loop.last %},{% endif %}
-							{% endfor %}
-						</span>
+			<div style="border-left: 3px black solid; padding-left: 15px;">
+				<div class="row ml-2 align-items-center">
+					<div class="col-lg-2">
+						<img width="100px" src="{{ book.cover }}">
 					</div>
-					<div id="bookInfo">{{ book.pages }} pages | {{ book.publish_date.year }}</div>
-					<div id="bookCategory">{{ book.book_category.name }}</div>
-					<button type="button" class="btn btn-flat btn-xs" style="margin-top: 15px; color: black;">
-						<a href="{{ url_for('book_history', book_isbn=book.isbn_13, ascending=True)}}"><span class="glyphicon glyphicon-transfer" aria-hidden="true"></span> VIEW LOAN HISTORY</a>
-					</button>
+	
+					<div class="col-lg-7">
+						<div id="bookTitle"> {{ book.full_title.upper() }} </div>
+						<div id="bookAuthor">by: 
+							<span style="font-weight: bold;">
+								{% for author in list_authors(book.authors, as_list=True) %}
+										{{ author }}{% if not loop.last %},{% endif %}
+								{% endfor %}
+							</span>
+						</div>
+						<div id="bookInfo">{{ book.pages }} pages | {{ book.publish_date.year }}</div>
+						<div id="bookCategory">{{ book.book_category.name }}</div>
+									
+					</div>
+					<div class="col-lg-3 ">
+						<a href="{{ url_for('book_history', book_isbn=book.isbn_13, ascending=True)}}">
+							<button type="button" class="btn btn-flat btn-xs" style="margin-top: 15px; color: black;">
+								<i class="bi bi-box-arrow-right"></i> VIEW LOAN HISTORY
+							</button>
+						</a>
+					</div>
 				</div>
 			</div>
+			
 		</div>
 	</div>
 </div>

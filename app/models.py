@@ -272,7 +272,7 @@ class Loan(db.Model):
 	@staticmethod
 	def get_loans(phone_num):
 		# Returns a query object
-		return Loan.query.filter_by(phone_num=phone_num)
+		return Loan.query.filter_by(phone_num=phone_num).filter(Loan.book_id.isnot(None))
 
 	@staticmethod
 	def get_expiring(delta=1, unit='weeks'):

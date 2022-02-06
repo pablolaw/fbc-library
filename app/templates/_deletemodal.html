@@ -1,48 +1,52 @@
 
-<div class="modal" id="{{ book.id }}-delete-modal" tabindex="-1" role="dialog" aria-labelledby="{{ book.id }}-delete-modal">
-	<div class="modal-dialog modal-lg" role="document">
+<div class="modal" id="m{{ book.id }}-delete-modal" tabindex="-1" role="dialog" aria-labelledby="{{ book.id }}-delete-modal">
+	<div class="modal-dialog modal-xl" role="document">
 		<div class="modal-content">
-			<div class="modal-header">
-    				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-    				<div id="modalHeader" class="modal-title">DELETE BOOK FROM COLLECTION</div>
-    				<div id="modalSubtitle" class="modal-title">DELETE THE FOLLOWING BOOK FROM THE COLLECTION? YOU WON'T BE ABLE TO RETRIEVE THE BOOK AFTER DELETION.</div>
+			<div class="modal-header justify-content-between">
+				<div style="display: block;">
+					<div id="modalHeader" class="modal-title">DELETE BOOK FROM COLLECTION</div>
+					<div id="modalSubtitle" class="modal-title">DELETE THE FOLLOWING BOOK FROM THE COLLECTION? YOU WON'T BE ABLE TO RETRIEVE THE BOOK AFTER DELETION.</div>
+				</div>
+				<div>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
       		</div>
-      		<div class="modal-body">
-      			<div class="panel panel-default" style="margin-bottom: 0px;">
-					<div class="panel-body"> 
-						<div class="col-lg-offset-4" style="border-left: 3px black solid; padding-left: 15px;">
-							<div class="row">
-								<div class="col-lg-2" style="margin-right: 10px;">
-									<img width="100px" src="{{ book.cover }}">
-								</div>
 
-								<div class="col-lg-7">
-									<div id="bookTitle"> {{ book.full_title.upper() }} </div>
-									<div id="bookAuthor">by: 
-										<span style="font-weight: bold;">
-											{% for author in list_authors(book.authors, as_list=True) %}
-													{{ author }}{% if not loop.last %},{% endif %}
-											{% endfor %}
-										</span>
+      		<div class="modal-body">
+				<div class="card" style="margin-bottom: 1em">
+					<div class="card-body"> 
+						<div class="row justify-content-end">
+				
+							<div>
+								<div class="row ml-2 justify-content-center align-items-center">
+									<div style="border-left: 3px black solid; padding-left: 15px;" class="col-auto">
+										<img width="100px" src="{{ book.cover }}">
 									</div>
-									<div id="bookInfo">{{ book.pages }} pages | {{ book.publish_date.year }}</div>
-									<div id="bookCategory">{{ book.book_category.name }}</div>
+					
+									<div class="col-auto">
+										<div id="bookTitle"> {{ book.full_title.upper() }} </div>
+										<div id="bookAuthor">by: 
+											<span style="font-weight: bold;">
+												{% for author in list_authors(book.authors, as_list=True) %}
+														{{ author }}{% if not loop.last %},{% endif %}
+												{% endfor %}
+											</span>
+										</div>
+										<div id="bookInfo">{{ book.pages }} pages | {{ book.publish_date.year }}</div>
+										<div id="bookCategory">{{ book.book_category.name }}</div>
+													
+									</div>
 								</div>
 							</div>
+							
 						</div>
 					</div>
 				</div>
       		</div>
 
       		<div class="modal-footer">
-      			<div class='row'>
-					<button type="button" class="btn btn-flat" data-dismiss="modal">Close</button>
-					<!-- <a type="button" method="post" href="{{ url_for('delete', book_isbn=book.isbn_13) }}" class="btn btn-flat">Delete</a> -->
-					<form action="{{ url_for('delete', book_isbn=book.isbn_13) }}" method="post" class="btn">
-	                	{{ form.hidden_tag() }}
-	                	<button type="submit" class="btn btn-flat">Delete</button>
-		            </form>
-	        	</div>
+					<button type="button" class="btn btn-flat" data-bs-dismiss="modal">Close</button>
+	                <button onclick="deleteBook('{{ book.isbn_13 }}')" class="btn btn-flat">Delete</button>
       		</div>
 		</div>
 	</div>
