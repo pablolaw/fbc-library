@@ -151,7 +151,8 @@ class Book(SearchableMixin, db.Model):
 		return BookIndex(
 			_id=self.id,
 			full_title=self.full_title,
-			authors = self._author_repr()
+			authors = self._author_repr(),
+			index='book'
 		)
 
 	def _get_status(self):
