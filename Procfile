@@ -1,1 +1,1 @@
-web: flask db init; flask db migrate -m "instantiate all tables"; flask db upgrade; gunicorn libapp:app
+web: flask db upgrade; gunicorn libapp:app
