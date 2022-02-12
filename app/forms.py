@@ -57,31 +57,34 @@ class BookLookUpForm(FlaskForm):
 	submit = SubmitField('Look Up')
 
 class BookEditForm(FlaskForm):
-	full_title = StringField('Full Title', validators=[DataRequired(), Length(min=0, max=100)])
+	full_title = StringField('Full Title (required)', validators=[DataRequired(), Length(min=0, max=100)])
 	pages = IntegerField('Number of Pages', validators=[NumberRange(min=0)])
 	publish_date = StringField('Publish Date', validators=[date_validator])
-	category = StringField('Category', validators=[DataRequired(), Length(max=32)])
-	authors = StringField('Authors')
+	category = StringField('Category (required)', validators=[DataRequired(), Length(max=32)])
+	authors = StringField('Authors (required)', validators=[DataRequired()])
+	number_of_copies = IntegerField('Number of Copies (required)', validators=[DataRequired(), NumberRange(min=1, max=app.config['MAX_NUMBER_OF_COPIES'])])
 	submit = SubmitField('Edit')
 
 class BookEntryForm(FlaskForm):
-	isbn_10 = StringField('ISBN-10', validators=[Length(min=10, max=10)])
-	isbn_13 = StringField('ISBN-13', validators=[Length(min=13, max=13)])
-	full_title = StringField('Full Title', validators=[DataRequired(), Length(min=0, max=100)])
+	isbn_10 = StringField('ISBN-10', validators=[Optional(), Length(min=10, max=10)])
+	isbn_13 = StringField('ISBN-13', validators=[Optional(), Length(min=13, max=13)])
+	full_title = StringField('Full Title (required)', validators=[DataRequired(), Length(min=0, max=100)])
 	pages = IntegerField('Number of Pages', validators=[NumberRange(min=0)])
 	publish_date = StringField('Publish Date', validators=[date_validator])
-	category = StringField('Category', validators=[DataRequired(), Length(max=32)])
-	authors = StringField('Authors')
+	category = StringField('Category', validators=[Optional(), Length(max=32)])
+	authors = StringField('Authors (required)', validators=[DataRequired()])
 	cover = HiddenField('Cover')
+	number_of_copies = IntegerField('Number of Copies (required)', validators=[DataRequired(), NumberRange(min=1, max=app.config['MAX_NUMBER_OF_COPIES'])])
 	submit = SubmitField('Add to Collection')
 
 class LoanPhoneForm(FlaskForm):
-	phone_num = StringField('Contact Phone', validators=[DataRequired(), Length(min=14, max=14)])
+	search_type = SelectField('Search Type', choices=['Name', 'Phone'], default='Name')
+	q = StringField('Contact Name', validators=[DataRequired(), Length(max=32)])
 	submit = SubmitField('Look Up')
 
 class LoanBookForm(FlaskForm):
-	phone_num = StringField('Contact Phone', validators=[DataRequired(), Length(min=14, max=14)])
-	name = StringField('Contact Name', validators=[DataRequired(), Length(max=32)])
+	phone_num = StringField('Contact Phone', validators=[Optional(), Length(min=14, max=14)])
+	name = StringField('Contact Name (required)', validators=[DataRequired(), Length(max=32)])
 	loan_duration_length = IntegerField('Length', validators=[DataRequired(), NumberRange(min=1, max=30)])
 	loan_duration_unit = SelectField('Unit', choices=[('days', 'Days'), ('weeks', 'Weeks')], default='weeks', validators=[DataRequired()])
 	submit = SubmitField('Check Out')

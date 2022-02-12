@@ -19,7 +19,6 @@
 			color: black; 
 			font-size: 15px;
 			letter-spacing: 0.1em;
-			margin-bottom: 10px;
 		}
 
 		#bookTitle {
@@ -117,8 +116,8 @@
 
 		})
 
-		function deleteBook(book_isbn) {
-			$.ajax(`/books/${book_isbn}`, 
+		function deleteBook(book_id) {
+			$.ajax(`/books/${book_id}`, 
 			{method: 'DELETE'}).done(function(response) {
 				window.location = response.url
 			}).fail(function() {

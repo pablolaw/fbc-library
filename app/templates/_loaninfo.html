@@ -1,0 +1,91 @@
+<div>
+    {% if not loan.is_overdue() %}
+    <div class="card text-dark border-success mb-3">
+        <div style="background-color: #d1e7dd; color: #0f5132;" class="card-header">Status: <span style="font-weight: bold;">AWAY ON LOAN</span></div>
+    {% else %}
+    <div class="card text-dark border-danger mb-3">
+        <div style="background-color: #f1c3c3; color: #7c0101;" class="card-header">Status: <span style="font-weight: bold;">OVERDUE</span></div>
+    {% endif %}
+
+    
+
+        <div class="card-body">
+            <div class="row justify-content-evenly align-items-center">
+
+                    <div class="col-sm-6">
+                        <div class='row align-items-end justify-content-center'>
+                            <div class="col-sm-6">
+                                <div class="row align-items-start">
+                                    <span class="loan-info-title">CONTACT PHONE: </span>
+                                </div>
+                                <div class="row align-items-start">
+                                    <span class="loan-info-title">CONTACT NAME: </span>
+                                </div>
+                                <div class="row align-items-start">
+                                    <span class="loan-info-title">DUE: </span>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                {% with loanee = loan.loaning_person %}
+                                <div class="row align-items-start">
+                                    <span>
+                                        {% if loanee.phone_num %}
+                                            {{ loanee.phone_num }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                <div class="row align-items-start">
+                                    <span><a href="{{ url_for('loanee_history', q_type='Name', q=loanee.name) }}">{{ loanee.name }}</a></span>
+                                </div>
+                                <div class="row align-items-start">
+                                    <span>{{ loan.in_timestamp.strftime('%Y-%m-%d') }}</span>
+                                </div>
+                                {% endwith %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-5">
+                        <div class="row">
+                            <form class="form" method="post" action="{{ url_for('extend_loan', loan_id=loan.id) }}">
+                                {{ g.editForm.hidden_tag() }}
+                                <div class="row">
+                                    <label for="loan_duration_length" class="form-label col-sm-8">Extend Loan for:</label> 
+                                </div>
+                                
+                                <div class="row justify-content-evenly align-items-end gx-0">
+                                    <div class="col-sm-4">
+                                        {{ g.loan_extend_form.loan_duration_length(class='form-control') }}
+                                    </div>
+                                    <div class="col-sm-4 dropdown">
+                                        {{ g.loan_extend_form.loan_duration_unit(class='form-control') }}
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <button type="submit" class="btn btn-flat btn-sm">Extend</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="strike">
+                               <span>OR</span>
+                           </div>
+
+                        
+                        <div class="row justify-content-center">
+                            <form class="form col-sm-8" method="post" action="{{ url_for('close_loan', loan_id=loan.id) }}">
+                                {{ g.loan_close_form.hidden_tag() }}
+                                <div class="text-center">
+                                    <button type="submit" class="btn btn-flat btn-sm">Return Book and Close Loan</button>
+                                </div>
+                            </form>
+                            
+                        </div>
+                    </div>
+                </div>
+        </div>
+
+    </div>
+</div>

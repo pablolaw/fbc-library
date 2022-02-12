@@ -33,7 +33,7 @@
                         {% endfor %}
                     </div>
 
-                    <div class="form-floating">
+                    <div class="form-floating required">
                         {{ g.enterForm.full_title(class='form-control') }}
                         {{ g.enterForm.full_title.label }}
                         {% for error in g.enterForm.full_title.errors %}
@@ -41,7 +41,7 @@
                         {% endfor %}
                     </div>
 
-                    <div class="form-floating">
+                    <div class="form-floating required">
                         {{ g.enterForm.authors(class='form-control') }}
                         {{ g.enterForm.authors.label }}
                         {% for error in g.enterForm.authors.errors %}
@@ -66,8 +66,21 @@
                     </div>
 
                     <div class="form-floating">
-                        {{ g.enterForm.category(class='form-control') }}
+                        {{ g.enterForm.category(list='category-names', class='form-control') }}
+                        <datalist id='category-names'>
+                            {% for category in book_categories %}
+                                <option value="{{ category.name }}"></option>
+                            {% endfor %}
+                        </datalist>
                         {{ g.enterForm.category.label }}
+                        {% for error in g.enterForm.category.errors %}
+                            <span style="color: red;">[{{ error }}]</span>
+                        {% endfor %}
+                    </div>
+
+                    <div class="form-floating required col-sm-8">
+                        {{ g.enterForm.number_of_copies(class='form-control') }}
+                        {{ g.enterForm.number_of_copies.label }}
                         {% for error in g.enterForm.category.errors %}
                             <span style="color: red;">[{{ error }}]</span>
                         {% endfor %}

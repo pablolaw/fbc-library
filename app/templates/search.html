@@ -77,8 +77,8 @@
 	{{ super() }}
 	<script src="https://unpkg.com/libphonenumber-js@1.x/bundle/libphonenumber-min.js"></script>
 	<script>
-		function deleteBook(book_isbn) {
-			$.ajax(`/books/${book_isbn}`, 
+		function deleteBook(book_id) {
+			$.ajax(`/books/${book_id}`, 
 			{method: 'DELETE'}).done(function(response) {
 				window.location = response.url
 			}).fail(function() {
@@ -91,6 +91,19 @@
 			const asYouType = new libphonenumber.AsYouType('US')
 			const formattedPhoneNum = asYouType.input($(elem)[0].value)
 			$(elem)[0].value = formattedPhoneNum
+		}
+
+		function populateUser(book_id) {
+			let popElem = '#' + String(book_id) + '-phone_num'
+			$(popElem)[0].value = '' // Clear in case phone number is missing
+			let getElem = '#' + String(book_id) + '-loaneeNames'
+			const matchName = $(`#${book_id}-name`).val()
+			$(getElem).children().each(function() {
+				if ($(this).val() === matchName) {
+					console.log($(this).data().phone)
+					$(popElem)[0].value = $(this).data().phone
+				}
+			})
 		}
 	</script>
 {% endblock %}

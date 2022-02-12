@@ -48,6 +48,19 @@
 			letter-spacing: 0.1em;
 		}
 
+		.loan-info-card-header {
+			font-family: 'Barlow', sans-serif; 
+			font-size: 14px; 
+			letter-spacing: 0.1em;
+		}
+
+		.loan-info-title {
+			font-family: 'Barlow', sans-serif; 
+			color: black; 
+			font-size: 15px;
+			letter-spacing: 0.1em;
+		}
+
 		.panel-heading {
 			font-family: 'Noto Sans', sans-serif; 
 			color: black; 
@@ -173,47 +186,20 @@
 			</div>
 		</div>
 
-		{% if curr_loan %}
-		<div style="margin-top: 5em;">
-			<div class="loan-type">CURRENT LOAN</div>
-			{% if not curr_loan.is_overdue() %}
-				<div class="card text-dark border-success">
-					<div style="background-color: #d1e7dd; color: #0f5132;" class="card-header">Status: <span style="font-weight: bold;">AWAY ON LOAN</span></div>
-					<table class="table mx-1" id="current_loan_table">
-						<tr>
-							<th>CONTACT PHONE</th>
-							<th>CONTACT NAME</th>
-							<th>DATE TAKEN OUT</th>
-							<th>DATE DUE</th>
-						</tr>
-						<tr>
-							<td>{{ curr_loan.phone_num }}</td>
-							<td>{{ curr_loan.loanee }}</td>
-							<td>{{ curr_loan.out_timestamp.strftime('%Y-%m-%d') }}</td>
-							<td>{{ curr_loan.in_timestamp.strftime('%Y-%m-%d') }}</td>
-						</tr>
-					</table>
+		{% if curr_loans['count'] > 0 %}
+			<div class="row justify-content-between mt-5">
+				<div class="col-lg-3">
+					<div class="loan-type">CURRENT LOANS</div>
+					<div class="loan-result-header">{{ curr_loans['count'] }} CURRENT LOAN(S) FOUND</div>
 				</div>
-			{% else %}
-			<div class="card text-dark border-danger mb-3">
-				<div style="background-color: #f1c3c3; color: #7c0101;" class="card-header">Status: <span style="font-weight: bold;">OVERDUE</span></div>
-					<table class="table mx-1">
-						<tr>
-							<th>Contact Phone</th>
-							<th>Contact Name</th>
-							<th>Date Taken Out</th>
-							<th>Date Due</th>
-						</tr>
-						<tr>
-							<td>{{ curr_loan.phone_num }}</td>
-							<td>{{ curr_loan.loanee }}</td>
-							<td>{{ curr_loan.out_timestamp.strftime('%Y-%m-%d') }}</td>
-							<td>{{ curr_loan.in_timestamp.strftime('%Y-%m-%d') }}</td>
-						</tr>
-					</table>
+			</div>
+			<div class="row justify-content-center">
+				<div class="col-sm-11">
+					{% for loan in curr_loans['items'] %}
+						{% include '_loaninfo.html' %}
+					{% endfor %}
 				</div>
-			{% endif %}
-			<div>
+			</div>
 		{% endif %}
 
 		<div style="margin-top: 5em;">
@@ -229,8 +215,9 @@
 			<table class="table table-bordered" id="past_loans_table">
 				<thead>
 					<tr>
-						<th>CONTACT PHONE</th>
+						<th>BOOK COPY</th>
 						<th>CONTACT NAME</th>
+						<th>CONTACT PHONE</th>
 						<th>DATE TAKEN OUT</th>
 						<th>DATE RETURNED </th>
 					</tr>
@@ -238,8 +225,9 @@
 				<tbody>
 					{% for loan in past_loans['items'] %}
 						<tr>
-							<td><a href="{{ url_for('loanee_history', phone_num=loan.phone_num)}}">{{ loan.phone_num }}</a></td>
-							<td>{{ loan.loanee }}</td>
+							<td>{{ loan.copy_id }}</td>
+							<td><a href="{{ url_for('loanee_history', q_type='Name', q=loan.loaning_person.name)}}">{{ loan.loaning_person.name }}</a></td>
+							<td>{{ loan.loaning_person.phone_num }}</td>
 							<td>{{ loan.out_timestamp.strftime('%Y-%m-%d') }}</td>
 							<td>{{ loan.in_timestamp.strftime('%Y-%m-%d') }}</td>
 						</tr>

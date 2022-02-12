@@ -132,7 +132,14 @@
 	<div class="col-sm-8">
 		<div style="margin-bottom: 2em; margin-left: -2em">
 			<div id="headerTitle">BORROWING HISTORY</div>
-			<div id="headerSubtitle">VIEW CURRENT AND PAST LOANS MADE BY <span style="font-weight: bold;">{{ phone_num }}</span></div>
+			<div id="headerSubtitle">
+				VIEW CURRENT AND PAST LOANS MADE BY 
+				<span style="font-weight: bold;">
+					{{ loanee.name }}{% if loanee.phone_num %}, 
+					<i class="bi bi-telephone-fill"></i> {{ loanee.phone_num }}
+					{% endif %}
+				</span>
+			</div>
 			<div id="headerSubtitle">{{ curr_loans['count'] }} ACTIVE LOANS AND {{ past_loans['count'] }} PAST LOANS</div>
 		</div>
 
@@ -157,7 +164,7 @@
 		{% endif %}
 
 		{% for loan in curr_loans['items'] %}
-				{% with book = loan.loaned_book %}
+				{% with book = loan.loaned_copy.work %}
 
 				<div>
 					{% if not loan.is_overdue() %}
@@ -185,6 +192,7 @@
 												{% endfor %}
 											</span>
 										</div>
+										<div id="bookAuthor">Book Copy: {{ loan.copy_id }}</div>
 										<div style="margin-top: 1em;">
 											<div class="bookInOutDate"> DATE TAKEN OUT: <span style="font-weight: bold;">{{ loan.out_timestamp.strftime('%Y-%m-%d') }}</span></div>
 											<div class="bookInOutDate"> DUE DATE: <span style="font-weight: bold;">{{ loan.in_timestamp.strftime('%Y-%m-%d') }}</span></div>
@@ -193,7 +201,7 @@
 	
 									<div class="col-lg-5">
 										<div class="row">
-											<form class="form" method="post" action="{{ url_for('extend_loan', book_isbn=book.isbn_13) }}">
+											<form class="form" method="post" action="{{ url_for('extend_loan', loan_id=loan.id) }}">
 												{{ g.editForm.hidden_tag() }}
 												<div class="row">
 													<label for="loan_duration_length" class="form-label col-lg-6">Extend Loan for:</label> 
@@ -219,7 +227,7 @@
 	
 										
 										<div class="row justify-content-center">
-											<form class="form col-sm-8" method="post" action="{{ url_for('close_loan', book_isbn=book.isbn_13) }}">
+											<form class="form col-sm-8" method="post" action="{{ url_for('close_loan', loan_id=loan.id) }}">
 												{{ g.loan_close_form.hidden_tag() }}
 												<div>
 													<button type=submit class="btn btn-flat btn-sm">Return Book and Close Loan</button>
@@ -252,16 +260,15 @@
 					<tr>
 						<th>TITLE</th>
 						<th>AUTHORS</th>
-						<th>ISBN-13</th>
+						<th>BOOK COPY</th>
 						<th>CATEGORY</th>
-						<th>CONTACT NAME</th>
 						<th>DATE TAKEN OUT</th>
 						<th>DATE RETURNED</th>
 					</tr>
 				</thead>
 				<tbody>
 					{% for loan in past_loans['items'] %}
-						{% with book = loan.loaned_book %}
+						{% with book = loan.loaned_copy.work %}
 						<tr>
 							<td>{{ book.full_title }}</td>
 							<td>
@@ -269,9 +276,8 @@
 									{{ author }}{% if not loop.last %},{% endif %}
 								{% endfor %}
 							</td>
-							<td>{{ book.isbn_13 }}</td>
+							<td>{{ loan.copy_id }}</td>
 							<td>{{ book.book_category.name }}</td>
-							<td>{{ loan.loanee }}</td>
 							<td>{{ loan.out_timestamp.strftime('%Y-%m-%d') }}</td>
 							<td>{{ loan.in_timestamp.strftime('%Y-%m-%d') }}</td>
 						</tr>

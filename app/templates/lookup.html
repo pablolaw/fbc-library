@@ -16,11 +16,23 @@
 							$('#modalContentContainer').html(`<div>{% include '_entermodal_loaded.html' %}</div>`)
 							populateFields('#enter-modal', response)
 						}).fail(function() {
-							console.log('Something wrong')
+							$('#modalContentContainer').html(`<div>{% include '_entermodal_loaded.html' %}</div>`)
+							$('#modalHeader')[0].innerText = 'SORRY...'
+							$('#modalSubtitle')[0].innerText = "We couldn't find information about the book you entered. Either try entering the ISBN again or entering all fields below manually."
 						});
 
 					event.preventDefault();
 				})
+
+			$('#manual-button').click(
+				function(event) {
+					$('#modalContentContainer').html(`{% include '_entermodal_loaded.html' %}`)
+					let defaultFields = {'number_of_copies': 1, 'cover': ''}
+					$('#modalHeader')[0].innerText = 'FILL OUT BOOK INFORMATION'
+					$('#modalSubtitle')[0].innerText = "Fill out the fields that you want to keep track of in our system below."
+					populateFields('#enter-modal', defaultFields)
+					$('#enter-modal').modal('show')
+			});
 
 			let _isScannerOn = false;
 			$('#scannerBtn').click(
@@ -61,6 +73,7 @@
 			if (data.cover !== '') {
 				cover_url = data['cover']
 			}
+			data['number_of_copies'] = 1
 			modal.find('#cover_container').html(`<img width='200px' src="${cover_url}">`)
 			for (let key in data) {
 				modal.find('#' + key)[0].value = data[key];
@@ -131,7 +144,7 @@
 						<label for="name" class="form-label col-sm-2 control-label">ISBN</label>
 					</div>
 	
-					<div class="row">
+					<div class="row mb-3">
 						<div class="col-lg-9">
 							{{ g.lookUpForm.isbn(class='form-control') }}
 							{% for error in g.lookUpForm.isbn.errors %}
@@ -143,6 +156,19 @@
 						</div>
 					</div>
 				</form>
+
+				<div class="strike">
+					<span>OR</span>
+				</div>
+
+				<div class="row justify-content-between my-3">
+					<div class="col-sm-4" style="font-family: 'Barlow', sans-serif;
+					color: grey;
+					letter-spacing: 0.1em;">NO ISBN? </div>
+					<button id='manual-button'class="btn btn-flat btn-sm mb-3 col-sm-8">
+						ENTER INFO MANUALLY
+					</button>
+				</div>
 			</div>
 		</div>
 	</div>

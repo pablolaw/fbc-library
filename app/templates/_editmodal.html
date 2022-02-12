@@ -1,5 +1,5 @@
 
-<div class="modal" id="{{ book.id }}-edit-modal" tabindex="-1" role="dialog" aria-labelledby="{{ book.id }}-edit-modal">
+<div class="modal" id="m{{ book.id }}-edit-modal" tabindex="-1" role="dialog" aria-labelledby="{{ book.id }}-edit-modal">
 		<div class="modal-dialog modal-xl" role="document">
 			<div class="modal-content">
 				<div class="modal-header justify-content-between">
@@ -10,12 +10,12 @@
 					<div>
 						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 					</div>
-				  </div>
+				</div>
 
 
-      			<form class="form form-horizontal" method="post" action="{{ url_for('edit', book_isbn=book.isbn_13) }}">
-      				{{ g.editForm.hidden_tag() }}
       				<div class="modal-body" style="width: 60vw;">
+						<form id="{{ book.id }}-edit-form"class="form form-horizontal" method="post" action="{{ url_for('edit', book_id=book.id) }}">
+							{{ g.editForm.hidden_tag() }}
 						  <div class="row g-3 justify-content-center align-items-center mb-5">
 							  <div class="col-sm-3">
 								  <img width="150px" src="{{ book.cover }}">
@@ -54,23 +54,38 @@
 								</div>
 
 								<div class="form-floating">
-									  {{ g.editForm.category(class='form-control', default=book.book_category.name) }}
+									  {{ g.editForm.category(list=book.id|string + '-edit-categories',class='form-control', default=book.book_category.name) }}
+									  <datalist id="{{ book.id }}-edit-categories">
+										  {% for category in book_categories %}
+										  	<option value="{{ category.name }}"></option>
+										  {% endfor %}
+									  </datalist>
 									  {{ g.editForm.category.label }}
 									  {% for error in g.editForm.category.errors %}
 										  <span style="color: red;">[{{ error }}]</span>
 									  {% endfor %}
 								</div>
 
+								<div class="form-floating col-sm-7">
+									{{ g.editForm.number_of_copies(max=10 - book.num_available_copies(), class='form-control', default=book.num_total_copies()) }}
+									{{ g.editForm.number_of_copies.label }}
+									{% for error in g.editForm.number_of_copies.errors %}
+										<span style="color: red;">[{{ error }}]</span>
+									{% endfor %}
+							  </div>
+
 							  </div>
 						  </div>
+						  <div class="modal-footer">
+							<button type="button" class="btn btn-flat" data-bs-dismiss="modal">Close</button>
+							<button type="submit" class="btn btn-flat-black">Update</button>
+						  </div>
+						</form>
+	
       				</div>
 
-      				<div class="modal-footer">
-        				<button type="button" class="btn btn-flat" data-bs-dismiss="modal">Close</button>
-        				<button type=submit class="btn btn-flat-black">Update</button>
-      				</div>
-
-      			</form>
+      				
+      			
 
 			</div>
 		</div>

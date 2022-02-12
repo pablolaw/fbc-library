@@ -103,8 +103,28 @@
 	{{ super() }}
 	<script src="https://unpkg.com/libphonenumber-js@1.x/bundle/libphonenumber-min.js"></script>
 	<script>
+		$(function() {
+			$('#search_type').change(function(e) {
+				if (e.target.value === 'Phone') {
+					$("label[for='q']")[0].innerText = 'Contact Phone';
+					$('#q-datalist-container').html('')
+					$("#q").keydown(phoneNumberFormatter)
+				} else if (e.target.value === 'Name') {
+					$("label[for='q']")[0].innerText = 'Contact Name';
+					$('#q-datalist-container').html(`
+					<datalist id='loanee-names'>
+						{% for loanee in loanees %}
+							<option value="{{ loanee.name }}"></option>
+						{% endfor %}
+					</datalist>`)
+					$('#q').off('keydown')
+				}
+			})
+
+		});
+
 		function phoneNumberFormatter() {
-			elem = '#phone_num'
+			elem = '#q'
 			const asYouType = new libphonenumber.AsYouType('US')
 			const formattedPhoneNum = asYouType.input($(elem)[0].value)
 			$(elem)[0].value = formattedPhoneNum
@@ -162,17 +182,32 @@
 	</div>
 
 	<div style="margin-top: 5em; margin-bottom: 2em; margin-left: -2em">
-		<div id="headerTitle">SEARCH LOANS BY PHONE NUMBER</div>
-		<div id="headerSubtitle">LOOK UP ACTIVE AND PAST LOANS ATTACHED TO A PHONE NUMBER</div>
+		<div id="headerTitle">SEARCH LENDING HISTORY</div>
+		<div id="headerSubtitle">LOOK UP ACTIVE AND PAST LOANS ATTACHED TO A PHONE NUMBER OR NAME</div>
 	</div>
 
 	<form class="form" method="get" action="">
 		{{ loan_phone_form.hidden_tag() }}
 		<div class="row justify-content-center align-items-end">
+			<div class="col-auto mb-2" style="font-family: 'Barlow', sans-serif; font-size: 16px;">
+				Search by:
+			</div>
+			<div class="col-sm-2">
+				<div class="form-floating">
+					{{ loan_phone_form.search_type(class='form-control', placeholder="") }}
+				</div>
+			</div>
 			<div class="col-sm-5">
 				<div class="form-floating">
-					{{ loan_phone_form.phone_num(class='form-control', onkeydown='phoneNumberFormatter()', placeholder="") }}
-					{{ loan_phone_form.phone_num.label }}
+					{{ loan_phone_form.q(list='loanee-names', class='form-control', placeholder="") }}
+					<div id="q-datalist-container">
+						<datalist id='loanee-names'>
+							{% for loanee in loanees %}
+								<option value="{{ loanee.name }}"></option>
+							{% endfor %}
+						</datalist>
+					</div>
+					{{ loan_phone_form.q.label }}
 				</div>
 			</div>
 			<div class="col-sm-2">
@@ -207,7 +242,7 @@
 	{% endif %}
 
 	{% for loan in exp_loans['items'] %}
-			{% with book = loan.loaned_book %}
+			{% with book = loan.loaned_copy.work %}
 
 			<div>
 				{% if not loan.is_overdue() %}
@@ -221,7 +256,7 @@
 				
 
 					<div class="card-body">
-						<div class="row justify-content-between">
+						<div class="row justify-content-between align-items-center">
 								<div class="col-sm-2">
 									<img width="125px" style="border-left: 3px black solid; padding-left: 15px;" src="{{ book.cover }}">
 								</div>
@@ -236,8 +271,18 @@
 										</span>
 									</div>
 									<div style="margin-top: 1em;">
-                                        <div class="loanee-info"><span class="glyphicon glyphicon-phone-alt"></span> <span style="font-weight: bold;">{{ loan.phone_num }}</span></div>
-                                        <div class="loanee-info"><span class="glyphicon glyphicon-user"></span> <span style="font-weight: bold;">{{ loan.loanee }}</span></div>
+										<div class="loanee-info"><i class="bi bi-person-circle"></i> <span style="font-weight: bold;">{{ loan.loaning_person.name }}</span></div>
+                                        <div class="loanee-info">
+											<i class="bi bi-telephone-fill"></i> 
+											<span style="font-weight: bold;">
+												{% if loan.loaning_person.phone_num %}
+													{{ loan.loaning_person.phone_num }}
+												{% else %}
+													-
+												{% endif %}
+												
+											</span>
+										</div>
 										<div class="bookInOutDate"> DATE TAKEN OUT: <span style="font-weight: bold;">{{ loan.out_timestamp.strftime('%Y-%m-%d') }}</span></div>
 										<div class="bookInOutDate"> DUE DATE: <span style="font-weight: bold;">{{ loan.in_timestamp.strftime('%Y-%m-%d') }}</span></div>
 									</div>
@@ -245,7 +290,7 @@
 
 								<div class="col-sm-5">
 									<div class="row">
-										<form class="form" method="post" action="{{ url_for('extend_loan', book_isbn=book.isbn_13) }}">
+										<form class="form" method="post" action="{{ url_for('extend_loan', loan_id=loan.id) }}">
 											{{ g.editForm.hidden_tag() }}
 											<div class="row">
 												<label for="loan_duration_length" class="form-label col-sm-6">Extend Loan for:</label> 
@@ -271,7 +316,7 @@
 
 									
 									<div class="row justify-content-center">
-										<form class="form col-sm-8" method="post" action="{{ url_for('close_loan', book_isbn=book.isbn_13) }}">
+										<form class="form col-sm-8" method="post" action="{{ url_for('close_loan', loan_id=loan.id) }}">
 											{{ g.loan_close_form.hidden_tag() }}
 											<div>
 												<button type=submit class="btn btn-flat btn-sm">Return Book and Close Loan</button>

@@ -18,12 +18,12 @@
 								{% endfor %}
 							</span>
 						</div>
-						<div id="bookInfo">{{ book.pages }} pages | {{ book.publish_date.year }}</div>
+						<div id="bookInfo">{{ book.pages }} pages | {% if book.publish_date %}{{ book.publish_date.year }}{% else %}NO DATE OF PUBLICATION{% endif %}</div>
 						<div id="bookCategory">{{ book.book_category.name }}</div>
 									
 					</div>
 					<div class="col-lg-3 ">
-						<a href="{{ url_for('book_history', book_isbn=book.isbn_13, ascending=True)}}">
+						<a href="{{ url_for('book_history', book_id=book.id, ascending=True)}}">
 							<button type="button" class="btn btn-flat btn-xs" style="margin-top: 15px; color: black;">
 								<i class="bi bi-box-arrow-right"></i> VIEW LOAN HISTORY
 							</button>

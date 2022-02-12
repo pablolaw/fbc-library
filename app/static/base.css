@@ -77,6 +77,17 @@ a:hover {
 	letter-spacing: 0.1em;
 }
 
+.grey-label {
+	font-family: 'Barlow', sans-serif;
+	color: #ada9a8;
+	letter-spacing: 0.1em
+}
+
+.form-floating.required .form-floating>label:after {
+	content:"*";
+	color:rgb(92, 28, 28);
+  }
+
 
 .btn-flat {
 	background-color: white;
