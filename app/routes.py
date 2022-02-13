@@ -92,6 +92,14 @@ def add_copies_to_collection(book: Book, new_total: int) -> int:
 	flash(f"400: Total number of copies exceeds max number of copies. No new copies of Book <{book.full_title}> were created", 'error')
 	return 0
 
+@app.errorhandler(404)
+def not_found_error(error):
+    return render_template('404.html'), 404
+
+@app.errorhandler(500)
+def not_found_error(error):
+    return render_template('500.html'), 500
+
 
 
 @app.context_processor

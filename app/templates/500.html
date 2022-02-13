@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block head %}
+	{{ super() }}
+	<style type="text/css">
+
+        #error-msg {
+			font-family: 'Noto Sans', sans-serif; 
+			color: #ada9a8; 
+			font-size: 1em; 
+			letter-spacing: 0.1em; 
+			margin-top: 4px; 
+			margin-bottom: 4px;
+		}
+
+        a {
+			font-family: 'Noto Sans', sans-serif; 
+			color: #ada9a8; 
+			font-size: 1em; 
+			letter-spacing: 0.1em; 
+			margin-top: 4px; 
+			margin-bottom: 4px;
+		}
+
+		#error-code {
+			font-family: 'Barlow', sans-serif; 
+			color: #ada9a8; 
+			font-size: 7em; 
+			letter-spacing: 0.1em; 
+			margin-top: 4px; 
+			margin-bottom: 4px;
+		}
+
+
+	</style>
+{% endblock %}
+
+{% block app_content %}
+
+    <div class="col-sm-5">
+        <div class="row justify-content-center text-center mt-5">
+            <div id="error-code">500</div>
+            <div id="error-msg">Something bad happened. The site developer has been notified....
+                <a href="{{ url_for('index')}}">GO BACK TO SAFETY</a></div>
+        </div>
+
+    </div>
+{% endblock %}
