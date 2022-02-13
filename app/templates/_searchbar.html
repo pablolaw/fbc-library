@@ -62,7 +62,12 @@
 								</div>
 
 								<div class="form-floating mb-3">
-									{{ g.as_form.category(class='form-control') }}
+									<select class="form-control" id="category" name="category">
+										<option value="None">None</option>
+										{% for category in book_categories %}
+											<option value="{{ category.name }}">{{ category.name }}</option>
+										{% endfor %}
+									</select>
 									{{ g.as_form.category.label }}
 								</div>
 							</div>

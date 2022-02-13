@@ -4,7 +4,6 @@ from wtforms import StringField, PasswordField, BooleanField, SubmitField, Integ
 from wtforms.validators import DataRequired, Length, NumberRange, ValidationError, Optional
 from dateparser import parse as parse_date
 from app import app
-# from app.models import Category
 from isbn import ISBN, isbn
 
 def isbn_validator(form, field):
@@ -34,7 +33,6 @@ class AdvancedSearchForm(FlaskForm):
 	full_title = StringField('Full Title', validators=[Optional(), Length(min=0, max=100)])
 	authors = StringField('Authors', validators=[Optional()])
 	publish_date = IntegerField('Year of Publication', validators=[Optional()])
-	# category = SelectField('Category', choices=[None] + Category.get_category_names(), default=None, validators=[Optional()])
 	category = SelectField('Category', choices=[None], default=None, validators=[Optional()])
 
 	def validate(self, extra_validators=None):
