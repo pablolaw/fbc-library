@@ -453,6 +453,7 @@ def search_author(author_name):
 @app.route('/books/advanced', methods=['GET', 'POST'])
 @login_required
 def advanced_search():
+	g.as_form.category.choices = [(c.name, c.name) for c in Category.query.order_by('name')]
 	if request.method == 'POST' and not g.as_form.validate_on_submit():
 		print(g.as_form.errors.items())
 		flash('Unable to query via advanced search. Check that at least one field is not empty and try again.', 'error')
