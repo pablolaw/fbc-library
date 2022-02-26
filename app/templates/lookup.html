@@ -97,7 +97,12 @@
 						facingMode: "environment"
 					}
 				},
-				locate: false,
+				locate: true,
+				locator: {
+					halfSample: true,
+					patchSize: "small"
+
+				},
 				decoder: {
 					readers: [
 						"ean_reader",
