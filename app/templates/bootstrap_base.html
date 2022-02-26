@@ -20,7 +20,10 @@
         {% endblock %}
     </head>
     <body>
-        {% block navbar %}{% endblock %}
+        <div class="container-fluid">
+            {% block navbar %}{% endblock %}
+        </div>
+        
         <!-- Your page content -->
         {% block content %}{% endblock %}
 

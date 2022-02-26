@@ -1,8 +1,8 @@
-<div class="modal-content" style="width: 60vw;">
+<div class="modal-content">
     <div class="modal-header justify-content-between">
         <div style="display: block;">
-            <div id="modalHeader" class="modal-title">YOU'RE ALMOST THERE...</div>
-            <div id="modalSubtitle" class="modal-title">Verify filled fields and enter information for the missing ones</div>
+            <h2 id="modalHeader" class="modal-title">YOU'RE ALMOST THERE...</h2>
+            <small id="modalSubtitle" class="modal-title text-muted">Verify filled fields and enter information for the missing ones</small>
         </div>
         <div>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -13,10 +13,10 @@
           {{ g.enterForm.hidden_tag() }}
           <div class="modal-body">
             <div class="row g-3 justify-content-evenly align-items-center mb-5">
-                <div id="cover_container" class="col-sm-3">
+                <div id="cover_container" class="col-sm-5 img-fluid text-center">
                 </div>
 
-                <div class="col-sm-6">
+                <div class="col-sm-9">
                     <div class="form-floating">
                         {{ g.enterForm.isbn_10(class='form-control') }}
                         {{ g.enterForm.isbn_10.label }}

@@ -37,15 +37,13 @@ a:hover {
 
 #headerTitle {
 	font-family: 'Montserrat', sans-serif; 
-	color: black; 
-	font-size: 40px; 
+	color: black;  
 	font-weight: 700;
 }
 
 #headerSubtitle {
 	font-family: 'Noto Sans', sans-serif; 
-	color: black; 
-	font-size: 14px; 
+	color: black;  
 	margin-top: -5px;
 	margin-bottom: 5px; 
 	letter-spacing: 0.1em;
@@ -145,21 +143,28 @@ a:hover {
 #modalHeader {
 	font-family: 'Montserrat', sans-serif; 
 	color: black; 
-	font-size: 30px; 
 	font-weight: 700;
 }
 
 #modalSubtitle {
 	font-family: 'Noto Sans', sans-serif; 
-	color: black; 
-	font-size: 12px; 
+	color: black;  
 	margin-top: -5px;
 	margin-bottom: 5px; 
 	letter-spacing: 0.1em;
 }
 
+#camera_container canvas.drawingBuffer {
+	display: none;
+}
+
 .modal {
   text-align: center;
+}
+
+.delete-warning {
+	font-family: 'Noto Sans', sans-serif; 
+	color: black;
 }
 
 .page-link {
@@ -226,7 +231,7 @@ select {
     display: block;
     text-align: center;
     overflow: hidden;
-    white-space: nowrap;
+    /* white-space: nowrap; */
     margin-top: 10px;
     margin-bottom: 10px; 
 }

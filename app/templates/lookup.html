@@ -3,7 +3,7 @@
 
 {% block scripts %}
 	{{ super() }}
-	<script src="https://cdn.rawgit.com/serratus/quaggaJS/0420d5e0/dist/quagga.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js"></script>
 	<script>
 		$(function() {
 			$('#lookUpForm').submit(
@@ -35,10 +35,12 @@
 			});
 
 			let _isScannerOn = false;
+			const camHeight = $('#barcode_img').height()
+			const camWidth = $('#barcode_img').width()
 			$('#scannerBtn').click(
 				function(event) {
 					if (!_isScannerOn) {
-						startScanner();
+						startScanner(camHeight, camWidth);
 						_isScannerOn = true;
 					} else {
 						closeScanner()
@@ -80,7 +82,8 @@
 			}
 		}
 
-		function startScanner() {
+		function startScanner(height, width) {
+			console.log(height, width)
 			$('#camera_container').empty()
 			$('#scannerBtn').children()[1].textContent = "CLOSE SCANNER"
 			Quagga.init({
@@ -89,8 +92,8 @@
 					type: "LiveStream",
 					target: document.querySelector('#camera_container'),
 					constraints: {
-						width: 450,
-						height: 286,
+						width: width,
+						height: height,
 						facingMode: "environment"
 					}
 				},
@@ -113,7 +116,7 @@
 		function closeScanner() {
 			Quagga.stop()
 			$('#scannerBtn').children()[1].textContent = "SCAN VIA CAMERA"
-			$('#camera_container').html("<img width='450px' src='{{ url_for('static', filename='isbn_ex.png') }}''>")
+			$('#camera_container').html("<img id='barcode_img' class='img-fluid' width='450px' src='{{ url_for('static', filename='isbn_ex.png') }}''>")
 		}
 
 	</script>
@@ -121,58 +124,65 @@
 
 
 {% block app_content %}
-<div class="col-lg-8">
-	<div style="margin-bottom: 10px; margin-left: -2em">
-		<div id="headerTitle">SCAN BOOKS</div>
-		<div id="headerSubtitle">{{ num_books }} ENTER A 10 OR 13 DIGIT ISBN</div>
-	</div>
-	<div class="row justify-content-between align-items-top">
-		<div id="camera_container" class="col-lg-6">
-			<img width="450px" src="{{ url_for('static', filename='isbn_ex.png') }}">
-		</div>
-		<div class="col-lg-5 mt-5">
-			<div class="row" style="margin-bottom: 2em;">
-				<button id="scannerBtn" class="btn btn-flat mb-3 row justify-content-between">
-					<i class="bi bi-webcam-fill"></i> <span id="scannerBtnText"> SCAN VIA CAMERA</span>
-				</button>
-				<div class="strike">
-					<span>OR</span>
+<div class="container">
+	<div class="row justify-content-center">
+		<div class="col-sm-10">
+			<div style="margin-bottom: 10px;">
+				<h2 id="headerTitle">SCAN BOOKS</h2>
+				<div id="headerSubtitle">{{ num_books }} ENTER A 10 OR 13 DIGIT ISBN</div>
+			</div>
+			<div class="row justify-content-center align-items-top">
+				<div id="camera_container" class="col-sm-6">
+					<img id="barcode_img" class="img-fluid" width="450px" src="{{ url_for('static', filename='isbn_ex.png') }}">
 				</div>
-				<form class="form form-horizontal form_label" id="lookUpForm">
-	
-					<div class="row">
-						<label for="name" class="form-label col-sm-2 control-label">ISBN</label>
-					</div>
-	
-					<div class="row mb-3">
-						<div class="col-lg-9">
-							{{ g.lookUpForm.isbn(class='form-control') }}
-							{% for error in g.lookUpForm.isbn.errors %}
-								<span style="color: red;">[{{ error }}]</span>
-							{% endfor %}
+				<div class="col-sm-5 mt-5 text-center">
+					<div class="row" style="margin-bottom: 2em; margin-left: auto;">
+						<div class="text-center">
+							<button id="scannerBtn" class="col-12 btn btn-flat mb-3 row justify-content-between">
+								<i class="bi bi-webcam-fill"></i> <span id="scannerBtnText"> SCAN VIA CAMERA</span>
+							</button>
 						</div>
-						<div class='col-auto'>
-							<button type=submit class="btn btn-flat btn-sm">Look Up</button>
+						
+						<div class="strike">
+							<span>OR</span>
+						</div>
+						<form class="form form-horizontal form_label" id="lookUpForm">
+			
+							<div class="row mb-3 align-items-end">
+								<div class="col-9">
+									<div class="form-floating">
+										{{ g.lookUpForm.isbn(class='form-control') }}
+										{{ g.lookUpForm.isbn.label }}
+										{% for error in g.lookUpForm.isbn.errors %}
+											<span style="color: red;">[{{ error }}]</span>
+										{% endfor %}
+									</div>
+								</div>
+								<div class='col-3'>
+									<button type=submit class="btn btn-flat btn-sm text-nowrap">Look Up</button>
+								</div>
+							</div>
+						</form>
+		
+						<div class="strike">
+							<span>OR</span>
+						</div>
+		
+						<div class="row justify-content-between my-3">
+							<div class="col-4" style="font-family: 'Barlow', sans-serif;
+							color: grey;
+							letter-spacing: 0.1em;">NO ISBN? </div>
+							<button id='manual-button'class="btn btn-flat btn-sm mb-3 col-8 text-nowrap">
+								ENTER INFO MANUALLY
+							</button>
 						</div>
 					</div>
-				</form>
-
-				<div class="strike">
-					<span>OR</span>
-				</div>
-
-				<div class="row justify-content-between my-3">
-					<div class="col-sm-4" style="font-family: 'Barlow', sans-serif;
-					color: grey;
-					letter-spacing: 0.1em;">NO ISBN? </div>
-					<button id='manual-button'class="btn btn-flat btn-sm mb-3 col-sm-8">
-						ENTER INFO MANUALLY
-					</button>
 				</div>
 			</div>
 		</div>
 	</div>
 </div>
+
 
 
 {% include '_entermodal.html' %}

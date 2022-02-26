@@ -73,7 +73,6 @@
 			color: black; 
 			font-size: 20px;
 			margin-bottom: 10px; 
-			margin-left: -1em
 		}
 
 		.loan-result-header {
@@ -81,7 +80,6 @@
 			color: black; 
 			font-size: 15px;
 			margin-top: -11px;
-			margin-left: -1em;
 			margin-bottom: 1em;
 			letter-spacing: 0.1em; 
 		}
@@ -151,92 +149,96 @@
 {% endblock %}
 
 {% block app_content %}
-	<div class="col-sm-8">
-		<div style="margin-bottom: 10px; margin-left: -2em">
-			<div id="headerTitle">LOAN HISTORY</div>
-			<div id="headerSubtitle">VIEW CURRENT AND PAST LOANS FOR THIS BOOK</div>
-		</div>
-		<div class="card" style="margin-bottom: 1em">
-			<div class="card-body"> 
-				<div class="row justify-content-end">
-		
-					<div>
-						<div class="row ml-2 justify-content-center align-items-center">
-							<div style="border-left: 3px black solid; padding-left: 15px;" class="col-auto">
-								<img width="100px" src="{{ book.cover }}">
-							</div>
-			
-							<div class="col-auto">
-								<div id="bookTitle"> {{ book.full_title.upper() }} </div>
-								<div id="bookAuthor">by: 
-									<span style="font-weight: bold;">
-										{% for author in list_authors(book.authors, as_list=True) %}
-												{{ author }}{% if not loop.last %},{% endif %}
-										{% endfor %}
-									</span>
+	<div class="container">
+		<div class="row justify-content-center">
+			<div class="col-sm-10">
+				<div style="margin-bottom: 10px;">
+					<h2 id="headerTitle">LOAN HISTORY</h2>
+					<small id="headerSubtitle" class="text-muted">VIEW CURRENT AND PAST LOANS FOR THIS BOOK</small>
+				</div>
+				<div class="card" style="margin-bottom: 1em">
+					<div class="card-body"> 
+						<div class="row justify-content-end">
+				
+							<div>
+								<div class="row ml-2 justify-content-center align-items-center">
+									<div style="border-left: 3px black solid; padding-left: 15px;" class="col-auto mb-2">
+										<img width="100px" src="{{ book.cover }}">
+									</div>
+					
+									<div class="col-auto">
+										<div id="bookTitle"> {{ book.full_title.upper() }} </div>
+										<div id="bookAuthor">by: 
+											<span style="font-weight: bold;">
+												{% for author in list_authors(book.authors, as_list=True) %}
+														{{ author }}{% if not loop.last %},{% endif %}
+												{% endfor %}
+											</span>
+										</div>
+										<div id="bookInfo">{{ book.pages }} pages | {{ book.publish_date.year }}</div>
+										<div id="bookCategory">{{ book.book_category.name }}</div>
+													
+									</div>
 								</div>
-								<div id="bookInfo">{{ book.pages }} pages | {{ book.publish_date.year }}</div>
-								<div id="bookCategory">{{ book.book_category.name }}</div>
-											
 							</div>
+							
 						</div>
 					</div>
-					
+				</div>
+		
+				{% if curr_loans['count'] > 0 %}
+					<div class="row justify-content-between mt-5">
+						<div class="col-lg-3">
+							<div class="loan-type">CURRENT LOANS</div>
+							<div class="loan-result-header">{{ curr_loans['count'] }} CURRENT LOAN(S) FOUND</div>
+						</div>
+					</div>
+					<div class="row justify-content-center">
+						<div class="col-sm-11">
+							{% for loan in curr_loans['items'] %}
+								{% include '_loaninfo.html' %}
+							{% endfor %}
+						</div>
+					</div>
+				{% endif %}
+		
+				<div style="margin-top: 5em;">
+					<div class="row justify-content-between">
+						<div class="col-lg-3">
+							<div class="loan-type">PAST LOANS</div>
+							<div class="loan-result-header">{{ past_loans['count'] }} PAST LOAN(S) FOUND</div>
+						</div>
+						<button id="sortButton" type="button" class="col-sm-3 btn" style="font-family: 'Barlow', sans-serif; letter-spacing: 0.05em; margin-top: 15px; border-color: white;">
+							<i style="font-size: 1.4em;" class="bi bi-sort-numeric-down"></i> SORT BY RETURN DATE
+						</button>
+					</div>
+					<table class="table table-bordered" id="past_loans_table">
+						<thead>
+							<tr>
+								<th>BOOK COPY</th>
+								<th>CONTACT NAME</th>
+								<th>CONTACT PHONE</th>
+								<th>DATE TAKEN OUT</th>
+								<th>DATE RETURNED </th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for loan in past_loans['items'] %}
+								<tr>
+									<td>{{ loan.copy_id }}</td>
+									<td><a href="{{ url_for('loanee_history', q_type='Name', q=loan.loaning_person.name)}}">{{ loan.loaning_person.name }}</a></td>
+									<td>{{ loan.loaning_person.phone_num }}</td>
+									<td>{{ loan.out_timestamp.strftime('%Y-%m-%d') }}</td>
+									<td>{{ loan.in_timestamp.strftime('%Y-%m-%d') }}</td>
+								</tr>
+							{% endfor %}
+						</tbody>
+					</table>
 				</div>
 			</div>
 		</div>
-
-		{% if curr_loans['count'] > 0 %}
-			<div class="row justify-content-between mt-5">
-				<div class="col-lg-3">
-					<div class="loan-type">CURRENT LOANS</div>
-					<div class="loan-result-header">{{ curr_loans['count'] }} CURRENT LOAN(S) FOUND</div>
-				</div>
-			</div>
-			<div class="row justify-content-center">
-				<div class="col-sm-11">
-					{% for loan in curr_loans['items'] %}
-						{% include '_loaninfo.html' %}
-					{% endfor %}
-				</div>
-			</div>
-		{% endif %}
-
-		<div style="margin-top: 5em;">
-			<div class="row justify-content-between">
-				<div class="col-lg-3">
-					<div class="loan-type">PAST LOANS</div>
-					<div class="loan-result-header">{{ past_loans['count'] }} PAST LOAN(S) FOUND</div>
-				</div>
-				<button id="sortButton" type="button" class="col-sm-3 btn" style="font-family: 'Barlow', sans-serif; letter-spacing: 0.05em; margin-top: 15px; border-color: white;">
-					<i style="font-size: 1.4em;" class="bi bi-sort-numeric-down"></i> SORT BY RETURN DATE
-				</button>
-			</div>
-			<table class="table table-bordered" id="past_loans_table">
-				<thead>
-					<tr>
-						<th>BOOK COPY</th>
-						<th>CONTACT NAME</th>
-						<th>CONTACT PHONE</th>
-						<th>DATE TAKEN OUT</th>
-						<th>DATE RETURNED </th>
-					</tr>
-				</thead>
-				<tbody>
-					{% for loan in past_loans['items'] %}
-						<tr>
-							<td>{{ loan.copy_id }}</td>
-							<td><a href="{{ url_for('loanee_history', q_type='Name', q=loan.loaning_person.name)}}">{{ loan.loaning_person.name }}</a></td>
-							<td>{{ loan.loaning_person.phone_num }}</td>
-							<td>{{ loan.out_timestamp.strftime('%Y-%m-%d') }}</td>
-							<td>{{ loan.in_timestamp.strftime('%Y-%m-%d') }}</td>
-						</tr>
-					{% endfor %}
-				</tbody>
-			</table>
-		</div>
+		
 	</div>
-</div>
 	
 
 	

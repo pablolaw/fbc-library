@@ -1,15 +1,15 @@
 
-<div class="card" style="margin-bottom: 1em; width: 50vw;">
+<div class="card" style="margin-bottom: 1em;">
 	<div class="card-body"> 
 		<div class="row justify-content-end">
 
 			<div style="border-left: 3px black solid; padding-left: 15px;">
-				<div class="row ml-2 align-items-center">
-					<div class="col-lg-2">
-						<img width="100px" src="{{ book.cover }}">
+				<div class="row ml-2 align-items-center mb-2">
+					<div class="col-sm-2">
+						<img class="img-fluid mb-2" src="{{ book.cover }}">
 					</div>
 	
-					<div class="col-lg-7">
+					<div class="col-sm-7">
 						<div id="bookTitle"> {{ book.full_title.upper() }} </div>
 						<div id="bookAuthor">by: 
 							<span style="font-weight: bold;">
@@ -22,9 +22,9 @@
 						<div id="bookCategory">{{ book.book_category.name }}</div>
 									
 					</div>
-					<div class="col-lg-3 ">
+					<div class="col-sm-3 ">
 						<a href="{{ url_for('book_history', book_id=book.id, ascending=True)}}">
-							<button type="button" class="btn btn-flat btn-xs" style="margin-top: 15px; color: black;">
+							<button type="button" class="btn btn-flat btn-xs text-nowrap" style="margin-top: 15px; color: black;">
 								<i class="bi bi-box-arrow-right"></i> VIEW LOAN HISTORY
 							</button>
 						</a>

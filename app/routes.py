@@ -1,3 +1,5 @@
+from email.policy import default
+from typing import Any
 from flask import render_template, flash, redirect, url_for, request, session, g, jsonify, abort
 from app import db, app
 from app.forms import LoginForm, BookLookUpForm, BookEditForm, BookEntryForm, EmptyForm, SearchForm, AdvancedSearchForm, LoanBookForm, LoanExtendForm, LoanPhoneForm
@@ -8,41 +10,12 @@ from werkzeug.http import HTTP_STATUS_CODES
 import urllib.request, json
 from urllib.error import HTTPError
 from datetime import datetime, timedelta
+from functools import wraps
+from app.search import SearchBuilder
+from app.book_util import BookBuilder, BookInfoBuilder
+from isbn import ISBNError
 
 # UTILITY FUNCTIONS (should probably put these somewhere else...)
-from dateparser import parse as parse_date
-import isbn
-
-def parse_isbn(data):
-	book_isbn = data.get('isbn_10') or data.get('isbn_13')
-	if book_isbn:
-		book_isbn = isbn.ISBN(book_isbn[0]) # book_isbn is a list
-		return book_isbn.isbn10(), book_isbn.isbn13()
-	return None, None
-
-def parse_title(data):
-	return data.get('full_title', data.get('title'))
-
-def parse_pages(data):
-	return data.get('number_of_pages')
-
-def parse_publish_date(data):
-	if "publish_date" in data:
-		# TODO: make constant
-		settings = {
-			"DATE_ORDER": "YMD",
-			"PREFER_DAY_OF_MONTH": 'first',
-		}
-		if data["publish_date"]:
-			date = parse_date(data["publish_date"], settings=settings)
-			return str(date)[:10]
-	return None
-
-def parse_authors(data):
-	# TODO: Use get
-	if "authors" in data:
-		return data['authors']
-	return []
 
 def list_authors(authors, as_list=False): # MOVE SOMEWHERE ELSE
 	# authors is a list of Author objects
@@ -57,47 +30,39 @@ def format_phone_num(phone_num):
 	return f'({phone_num[:3]})-{phone_num[3:6]}-{phone_num[6:]}'
 
 
-def _query_repr(query_obj):
-	# Turn query dictionary into user readable string
-	qs = [str(q) for q in query_obj.values()]
-	return ', '.join(qs)
+def entity_exists(entity_cls):
+	def decorator(f):
+		@wraps(f)
+		def wrapper(*args, **kwargs):
+			entity_id = None
+			entity_key = None
+			for k in kwargs.keys():
+				if k.endswith('_id'):
+					entity_id = kwargs[k]
+					entity_key = k
+			if entity_id is None:
+				abort(400, f'Request is missing an identifier for {entity_cls.__name__}')
 
-def delete_copies_from_collection(book: Book, new_total: int) -> int:
-	num_existing = book.num_total_copies()
-	print(f'Book currently has {num_existing} copies in collection.')
-	if num_existing > new_total:
-		# Check if there are enough copies to delete
-		num_delete = num_existing - new_total
-		if book.num_available_copies() >= num_delete:
-			to_delete = book.delete_copies(num_delete)
-			if len(to_delete) == 0:
-				flash(f'500: Unable to delete {num_delete} copies of Book <{book.full_title}>', 'error')
-				return 0
-			else:
-				for id in to_delete: # Can't do a bulk delete because of cascade relationship
-					copy = Copy.query.get_or_404(int(id))
-					db.session.delete(copy)
-				return -num_delete
-		else:
-			flash(f"400: Can't delete more copies of Book <{book.full_title}> than are available.", 'error')
-	return 0
+			if issubclass(entity_cls, db.Model):
+				entity = entity_cls.query.get(entity_id)
+				if entity is None:
+					abort(404, f'<{entity_cls.__name__} id: {entity_id}> does not exist in collection.')
+				kwargs[entity_cls.__name__.lower()] = entity
+				kwargs.pop(entity_key)
+			return f(*args, **kwargs)
+		return wrapper
+	return decorator
 
-
-def add_copies_to_collection(book: Book, new_total: int) -> int:
-	num_existing = book.num_total_copies()
-	if num_existing < new_total and new_total <= app.config['MAX_NUMBER_OF_COPIES']:
-		num_create = new_total - num_existing
-		_ = book.generate_copies(num_create)
-		return num_create
-	flash(f"400: Total number of copies exceeds max number of copies. No new copies of Book <{book.full_title}> were created", 'error')
-	return 0
 
 @app.errorhandler(404)
 def not_found_error(error):
-    return render_template('404.html'), 404
+	if error.description:
+		flash(error.description, 'error')
+		return index(), 404
+	return render_template('404.html'), 404
 
 @app.errorhandler(500)
-def not_found_error(error):
+def internal_server_error(error):
     return render_template('500.html'), 500
 
 
@@ -156,6 +121,7 @@ def all_books():
 	session['url'] = url_for('all_books')
 
 	context = {
+		'page_type': 'view',
 		'book_categories': categories,
 		'all_loanees': loanees,
 		'form': form,
@@ -218,60 +184,18 @@ def login():
 @login_required
 def lookup(book_isbn):
 	try:
-		val_isbn = isbn.ISBN(book_isbn)
-		isbn_10, isbn_13 = val_isbn.isbn10(), val_isbn.isbn13()
-	except isbn.ISBNError: # Make this into a function
+		info_builder = BookInfoBuilder(book_isbn)
+	except ISBNError:
 		payload = {'error': HTTP_STATUS_CODES.get(400, 'Unknown error')}
 		payload['message'] = 'must be a valid ISBN-10 or ISBN-13 number'
 		response = jsonify(payload)
 		response.status_code = 400
 		return response
 
-	info_url = f'https://openlibrary.org/isbn/{isbn_13}.json'
-	book_info = dict()
-	data = None
-	try:
-		with urllib.request.urlopen(info_url) as response:
-			payload = response.read()
-			data = json.loads(payload)
-		full_title = parse_title(data)
-		pages = parse_pages(data)
-		publish_date = parse_publish_date(data)
-		status_code = 200
-	except HTTPError:
-		full_title, pages, publish_date = '','',''
-		status_code = 400
-	finally:
-		book_info = {
-			'isbn_10': isbn_10,
-			'isbn_13': isbn_13,
-			'full_title': full_title,
-			'pages': pages,
-			'publish_date': publish_date,
-			'status_code': status_code
-		}
-
-	cover_url = f'https://covers.openlibrary.org/b/isbn/{isbn_13}-M.jpg?default=False'
-	try:
-		response = urllib.request.urlopen(cover_url)
-	except HTTPError:
-		cover_url = ''
-	finally:
-		book_info['cover'] = cover_url
-
-	# Get author information
-	if not data:
-		book_info['authors'] = ''
-	else:
-		authors = parse_authors(data)
-		author_names = []
-		for author in authors:
-			url = 'https://openlibrary.org{}.json'.format(author['key'])
-			with urllib.request.urlopen(url) as response:
-				payload = response.read()
-				name = json.loads(payload)['name']
-			author_names.append(name)
-		book_info['authors'] = ', '.join(author_names)
+	book_info = info_builder.get_info() \
+	                        .get_cover() \
+							.get_authors() \
+							.data()
 
 	return jsonify(book_info)
 
@@ -279,49 +203,16 @@ def lookup(book_isbn):
 @login_required
 def add_to_collection():
 	if g.enterForm.validate_on_submit():
-		book = Book(full_title=g.enterForm.full_title.data)
-
-		if g.enterForm.isbn_13.data:
-			q_book = Book.get_by_isbn(g.enterForm.isbn_13.data)
-			if q_book:
-				flash(f'Book <ISBN-13 {q_book.isbn_13}> is already in collection', 'error')
-				return redirect(url_for('enter'))
-			book.isbn_13 = g.enterForm.isbn_13.data
-
-		category = None
-		if g.enterForm.category.data == '':
-			category = Category.query.filter_by(name='MISSING').first()
-		else:
-			category = Category.query.filter_by(name=g.enterForm.category.data).first()
-			if not category:
-				category = Category(name=g.enterForm.category.data)
-				db.session.add(category)
-				db.session.commit()
-
-		book.isbn_10 = g.enterForm.isbn_10.data # Could be null
-		book.pages = g.enterForm.pages.data
-		book.publish_date = parse_date(g.enterForm.publish_date.data)
-		book.book_category = category
-		
-		if g.enterForm.number_of_copies.data > 0 and g.enterForm.number_of_copies.data < app.config['MAX_NUMBER_OF_COPIES']:
-			num_copies = g.enterForm.number_of_copies.data
-		else:
-			num_copies = 1
-		_ = book.generate_copies(num_copies)
-
-		if g.enterForm.cover.data == '':
-			book.cover = url_for('static', filename='nocover.jpg')
-		else:
-			book.cover = g.enterForm.cover.data
-
-		for author_token in g.enterForm.authors.data.split(', '):
-			author_token = author_token.strip().title()
-			author = Author.query.filter_by(name=author_token).first()
-			if not author:
-				author = Author(name=author_token)
-				db.session.add(author)
-				
-			book.authors.append(author)
+		builder = BookBuilder()
+		book = builder.enter_title(g.enterForm.full_title.data) \
+			          .enter_isbn13(g.enterForm.isbn_13.data) \
+					  .enter_isbn10(g.enterForm.isbn_10.data) \
+					  .enter_category(g.enterForm.category.data) \
+					  .enter_pages(g.enterForm.pages.data) \
+					  .enter_publish_date(g.enterForm.publish_date.data) \
+					  .enter_num_copies(g.enterForm.number_of_copies.data, app.config['MAX_NUMBER_OF_COPIES']) \
+					  .enter_cover(g.enterForm.cover.data) \
+					  .enter_authors(g.enterForm.authors.data).book()
 
 		db.session.add(book)
 		db.session.commit()
@@ -337,23 +228,15 @@ def enter():
 	return render_template('lookup.html', book_categories=categories, title='Enter Books')
 
 
-@app.route('/books/<book_id>', methods=['DELETE'])
+@app.route('/books/<int:book_id>', methods=['DELETE'])
+@entity_exists(Book)
 @login_required
-def delete(book_id):
-	book = Book.query.get(int(book_id))
-	print(f'The Book: {book}')
-	if book is None:
-		flash(f'Book <id: {book_id}> not in collection', 'error')
-		payload = {'error': HTTP_STATUS_CODES.get(404, 'Unknown error')}
-		payload['message'] = f'Book {book_id} not in collection'
-		response = jsonify(payload)
-		response.status_code = 404
-		return response
+def delete(book: Book) -> Any:
 
 	if not book.all_copies_available():
-		flash(f'Book <id:{book_id}> has copies not on shelf and cannot be deleted. Close any current loans and try again.', 'error')
+		flash(f'Book <id:{book.id}> has copies not on shelf and cannot be deleted. Close any current loans and try again.', 'error')
 		payload = {'error': HTTP_STATUS_CODES.get(400, 'Unknown error')}
-		payload['message'] = f'Book <id:{book_id}> has copies not on shelf and cannot be deleted. Close any current loans and try again.'
+		payload['message'] = f'Book <id:{book.id}> has copies not on shelf and cannot be deleted. Close any current loans and try again.'
 		response = jsonify(payload)
 		response.status_code = 400
 		return response
@@ -369,61 +252,33 @@ def delete(book_id):
 	return jsonify(payload)
 
 
-@app.route('/book/<book_id>', methods=['POST'])
+@app.route('/book/<int:book_id>', methods=['POST'])
+@entity_exists(Book)
 @login_required
-def edit(book_id):
-
-	book = Book.query.get_or_404(int(book_id))
-	if book is None:
-		flash(f'Book <id: {book_id}> not in collection', 'error')
-		return redirect(url_for('all_books'))
+def edit(book: Book) -> Any:
 
 	if g.editForm.validate_on_submit():
-		# Add or delete copies
-		num_created = 0
-		num_existing = book.num_total_copies()
-		if num_existing < g.editForm.number_of_copies.data:
-			num_created = add_copies_to_collection(book, g.editForm.number_of_copies.data)
-		elif g.editForm.number_of_copies.data < num_existing:
-			num_created = delete_copies_from_collection(book, g.editForm.number_of_copies.data)
-			
-		# Update category
-		# If category has changed, look up or add and change it
-		if g.editForm.category.data != book.book_category.name:
-			category = Category.query.filter_by(name=g.editForm.category.data).first()
-			if not category:
-				category = Category(name=g.editForm.category.data)
-				db.session.add(category)
-				db.session.commit()
-			book.book_category = category
+		editor = BookBuilder(book)
+		to_delete, num_changed = editor.edit_num_copies(g.editForm.number_of_copies.data, app.config['MAX_NUMBER_OF_COPIES'])
+		if num_changed < 0:
+			for id in to_delete: # Need to do this for cascade delete to work
+				copy = Copy.query.get(int(id))
+				db.session.delete(copy)
 
-		# Update authors
-		existing_authors = [a.name for a in book.authors]
-		new_author_tok = [a.strip().title() for a in g.editForm.authors.data.split(', ')]
-		new_authors = []
-
-		if existing_authors != new_author_tok:
-			for author_token in new_author_tok:
-				author = Author.query.filter_by(name=author_token).first()
-				if not author:
-					author = Author(name=author_token)
-					db.session.add(author)
-					db.session.commit()
-				new_authors.append(author)
-			book.authors = new_authors
-
-		# Update other fields
-		book.full_title = g.editForm.full_title.data
-		book.pages = g.editForm.pages.data
-		book.publish_date = parse_date(g.editForm.publish_date.data)
-			
-
+		book = editor.edit_category(g.editForm.category.data) \
+			         .edit_authors(g.editForm.authors.data) \
+					 .edit_title(g.editForm.full_title.data) \
+					 .edit_pages(g.editForm.pages.data) \
+					 .edit_publish_date(g.editForm.publish_date.data) \
+					 .book()
+		
+		db.session.add(book)			
 		db.session.commit()
 		flash(f'Successfully changed Book <{book.full_title}> data', 'success')
-		if num_created > 0:
-			flash(f'{num_created} copies of Book <{book.full_title}> were added to the collection.', 'info')
-		elif num_created < 0:
-			flash(f'{-num_created} copies of Book <{book.full_title}> were deleted from the collection.', 'info')
+		if num_changed > 0:
+			flash(f'{num_changed} copies of Book <{book.full_title}> were added to the collection.', 'info')
+		elif num_changed < 0:
+			flash(f'{-num_changed} copies of Book <{book.full_title}> were deleted from the collection.', 'info')
 	else:
 		if 'number_of_copies' in g.editForm.errors:
 			max_copies = app.config['MAX_NUMBER_OF_COPIES']
@@ -431,7 +286,7 @@ def edit(book_id):
 		else:
 			flash(f'Unable to change Book <{book.full_title}> data. Try again.', 'error')
 
-	return redirect(url_for('all_books'))
+	return redirect(session.get('url')) or redirect(url_for('all_books'))
 
 
 @app.route('/books/authors/<author_name>', methods=['GET'])
@@ -445,7 +300,10 @@ def search_author(author_name):
 	loanees = Loanee.query.order_by(Loanee.name).all()
 	categories = Category.query.order_by(Category.name).all()
 
-	return render_template('search.html',
+	session['url'] = url_for('search_author', author_name=author_name, page=page)
+
+	return render_template('collection.html',
+		page_type='search',
 		book_categories= categories,
 		all_loanees= loanees, 
 		search_type='Author',
@@ -458,63 +316,49 @@ def search_author(author_name):
 		prev_url=prev_url
 		)
 
-@app.route('/books/advanced', methods=['GET', 'POST'])
+@app.route('/books/advanced', methods=['GET'])
 @login_required
 def advanced_search():
-	g.as_form.category.choices = [(c.name, c.name) for c in Category.query.order_by('name')]
-	if request.method == 'POST' and not g.as_form.validate_on_submit():
-		print(g.as_form.errors.items())
+	as_form = AdvancedSearchForm(request.args)
+	as_form.category.choices = [None] + [c.name for c in Category.query.order_by('name')]
+	if not as_form.validate():
 		flash('Unable to query via advanced search. Check that at least one field is not empty and try again.', 'error')
 		return redirect(url_for('all_books'))
 
-	query_obj = dict()
 	page = request.args.get('page', 1, type=int)
+	builder = SearchBuilder()
+	books, total = builder.add_fuzzy_title(request.args.get('full_title')) \
+	                      .add_fuzzy_author(request.args.get('authors')) \
+					      .add_category(request.args.get('category')) \
+					      .add_date(request.args.get('publish_date')) \
+					      .search().execute(page, app.config['BOOKS_PER_PAGE'])
 
-	if request.method == 'GET':
-		if 'title' in request.args:
-			query_obj['full_title'] = request.args.get('title')
-		if 'authors' in request.args:
-			query_obj['authors'] = request.args.get('authors')
-		if 'category' in request.args:
-			query_obj['category'] = request.args.get('category')
-		if 'publish_date' in request.args:
-			query_obj['publish_date'] = request.args.get('publish_date')
-	else:
-		if g.as_form.full_title.data:
-			query_obj['full_title'] = g.as_form.full_title.data
-		if g.as_form.authors.data:
-			query_obj['authors'] = g.as_form.authors.data
-		if g.as_form.category.data and g.as_form.category.data != 'None':
-			query_obj['category'] = g.as_form.category.data
-		if g.as_form.publish_date.data:
-			query_obj['publish_date'] = g.as_form.publish_date.data
+	query_args = request.args.to_dict()
+	query_args.pop('page', 1)
+	query_args.pop('csrf_token', '')
 
-	if len(query_obj) == 0:
-		flash('At least one field must be non-empty for advanced search.', 'error')
-		return redirect(url_for('all_books'))
-
-	books, total = Book.search_advanced(query_obj, page, app.config['BOOKS_PER_PAGE'])
-	next_url = url_for('advanced_search', page=page + 1, **query_obj) if total > page * app.config['BOOKS_PER_PAGE'] else None
-	prev_url = url_for('advanced_search', page=page - 1, **query_obj) if page > 1 else None
+	next_url = url_for('advanced_search', page=page + 1, **query_args) if total > page * app.config['BOOKS_PER_PAGE'] else None
+	prev_url = url_for('advanced_search', page=page - 1, **query_args) if page > 1 else None
 	form = EmptyForm()
 	loanees = Loanee.query.order_by(Loanee.name).all()
 	categories = Category.query.order_by(Category.name).all()
 
 	# So that user returns to index page after performing action
-	session['url'] = url_for('all_books')
+	session['url'] = url_for('advanced_search', page=page, **query_args)
 
 	context = {
+		'page_type': 'search',
 		'book_categories': categories,
 		'all_loanees': loanees,
 		'search_type':'Advanced',
-		'search_query':_query_repr(query_obj),
+		'search_query': builder.search_repr(),
 		'form':form,
 		'num_books':total,
 		'books':books.items,
 		'next_url':next_url,
 		'prev_url':prev_url,
 	}
-	return render_template('search.html', **context)
+	return render_template('collection.html', **context)
 
 		
 @app.route('/search', methods=['GET', 'POST'])
@@ -551,9 +395,10 @@ def search():
 	categories = Category.query.order_by(Category.name).all()
 
 	# So that user returns to index page after performing action
-	session['url'] = url_for('index')
+	session['url'] = url_for('search', search_type=search_type, q=query, page=page)
 
-	return render_template('search.html',
+	return render_template('collection.html',
+		page_type='search',
 		book_categories= categories,
 		all_loanees= loanees, 
 		search_type=g.search_form.search_type.data,
@@ -566,20 +411,16 @@ def search():
 		prev_url=prev_url
 		)
 
-@app.route('/loan/<book_id>', methods=['POST'])
+@app.route('/loan/<int:book_id>', methods=['POST'])
+@entity_exists(Book)
 @login_required
-def loan(book_id):
+def loan(book: Book):
 	if not g.loanForm.validate_on_submit():
-		flash(f'Unable to check out Book <id: {book_id}> for lending. Try again.', 'error')
-		return redirect(url_for('all_books'))
-
-	book = Book.query.get(int(book_id))
-	if book is None:
-		flash(f'Book <id: {book_id}> not in collection', 'error')
+		flash(f'Unable to check out Book <{book.full_title}> for lending. Try again.', 'error')
 		return redirect(url_for('all_books'))
 
 	if book.num_available_copies() == 0:
-		flash(f'400: Book <id: {book_id}> is not available for lending.', 'error')
+		flash(f'400: Book <{book.full_title}> is not available for lending.', 'error')
 		return redirect(url_for('all_books'))
 
 	# Create or get a loanee object
@@ -598,29 +439,24 @@ def loan(book_id):
 
 	db.session.add(loan_obj)
 	db.session.commit()
-	flash(f'Book <id: {book_id}> successfully checked out to {g.loanForm.name.data}', 'success')
+	flash(f'Book <{book.full_title}> successfully checked out to {g.loanForm.name.data}', 'success')
 	return redirect(url_for('index'))
 
-@app.route('/loan/extend/<loan_id>', methods=['POST'])
+@app.route('/loan/extend/<int:loan_id>', methods=['POST'])
+@entity_exists(Loan)
 @login_required
-def extend_loan(loan_id):
+def extend_loan(loan: Loan):
 	if not g.loan_extend_form.validate_on_submit():
-		flash(f'400: Unable to process loan extention for Loan <id: {loan_id}>. Try again.', 'error')
-		return redirect(url_for('all_books'))
-
-	loan = Loan.query.get(int(loan_id))
-
-	if loan is None:
-		flash(f'404: Loan <id: {loan_id}> not found.', 'error')
+		flash(f'400: Unable to process loan extention for Loan <id: {loan.id}>. Try again.', 'error')
 		return redirect(url_for('all_books'))
 
 	if not loan.is_active():
-		flash(f'400: Loan <id: {loan_id}> has already been closed and cannot be extended.', 'error')
+		flash(f'400: Loan <id: {loan.id}> has already been closed and cannot be extended.', 'error')
 
 	success = loan.extend_loan_period(g.loan_extend_form.loan_duration_length.data, g.loan_extend_form.loan_duration_unit.data)
 
 	if not success:
-		flash(f'500: Unable to extend Loan <id: {loan_id}>. Contact site administrator.', 'error')
+		flash(f'500: Unable to extend Loan <id: {loan.id}>. Contact site administrator.', 'error')
 		return redirect(url_for('all_books'))
 
 	db.session.commit()
@@ -634,25 +470,20 @@ def extend_loan(loan_id):
 	return redirect(url_for('all_books'))
 
 @app.route('/loans/close/<loan_id>', methods=['POST'])
+@entity_exists(Loan)
 @login_required
-def close_loan(loan_id):
+def close_loan(loan: Loan):
 	if not g.loan_close_form.validate_on_submit():
-		flash(f'400: Unable to close Loan <id: {loan_id}>. Try again.', 'error')
-		return redirect(url_for('all_books'))
-
-	loan = Loan.query.get(int(loan_id))
-
-	if loan is None:
-		flash(f'404: Loan <id: {loan_id}> not found.', 'error')
+		flash(f'400: Unable to close Loan <id: {loan.id}>. Try again.', 'error')
 		return redirect(url_for('all_books'))
 
 	if not loan.is_active():
-		flash(f'400: Loan <id: {loan_id}> has already been closed and cannot be closed again.', 'error')
+		flash(f'400: Loan <id: {loan.id}> has already been closed and cannot be closed again.', 'error')
 
 	success = loan.close()
 
 	if not success:
-		flash(f'500: Unable to close Loan <id: {loan_id}>. Contact site administrator.', 'error')
+		flash(f'500: Unable to close Loan <id: {loan.id}>. Contact site administrator.', 'error')
 
 	db.session.commit()
 	flash(f'Loan <to: {loan.loaning_person.name or loan.loaning_person.phone_num}> was successfully closed and the book is back on the shelf.', 'success')
@@ -664,14 +495,10 @@ def close_loan(loan_id):
 
 	return redirect(url_for('index'))
 
-@app.route('/book/loans/<book_id>', methods=['GET'])
+@app.route('/book/loans/<int:book_id>', methods=['GET'])
+@entity_exists(Book)
 @login_required
-def book_history(book_id):
-	book = Book.query.get(int(book_id))
-
-	if book is None:
-		flash(f'404: Book <id: {book_id}> not in collection', 'error')
-		abort(404)
+def book_history(book: Book) -> str:
 
 	# page = request.args.get('page', 1, type=int)
 	all_loans = book.get_all_loans()

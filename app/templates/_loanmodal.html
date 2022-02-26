@@ -1,18 +1,21 @@
 
 <div class="modal" id="m{{ book.id }}-loan-modal" tabindex="-1" role="dialog" aria-labelledby="m{{ book.id }}-loan-modal">
-	<div class="modal-dialog modal-lg" role="document">
+	<div class="modal-dialog modal-lg modal-fullscreen-sm-down" role="document">
 		<div class="modal-content">
 			<div class="modal-header justify-content-between">
 				<div style="display: block;">
-					<div id="modalHeader" class="modal-title">LOAN INFORMATION</div>
-					<div id="modalSubtitle" class="modal-title">VIEW CONTACT INFORMATION AND EXTEND OR CLOSE CURRENT LOAN.</div>
+					<h2 id="modalHeader" class="modal-title">LOAN INFORMATION</h2>
+					<small id="modalSubtitle" class="modal-title text-muted">VIEW CONTACT INFORMATION AND EXTEND OR CLOSE CURRENT LOAN.</small>
 				</div>
 				<div>
 					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				</div>
       		</div>
-			<div class="modal-body">
-				{% include '_bookinfo.html' %}
+			<div class="modal-body clearfix">
+				<div class="container-fluid">
+					<div class="row">
+						{% include '_bookinfo.html' %}
+					</div>
 
 				{% with num_on_loan = book.num_total_copies() - book.num_available_copies() %}
 				{% if num_on_loan > 0 %}
@@ -43,43 +46,51 @@
 				</div>
 
 				<form class="form" method="post" action="{{ url_for('loan', book_id=book.id) }}">
-					<div class="row g-3 align-items-center mb-3">
+					<div class="row g-3 justify-content-center align-items-center mb-3">
 						{{ g.editForm.hidden_tag() }}
 
-						<div class="form-floating col-auto">
-							{{ g.loanForm.name(list=book.id|string + '-loaneeNames', oninput='populateUser(%d)' % book.id, id=book.id|string + '-name', class="form-control", placeholder="") }}
-							<datalist id="{{ book.id }}-loaneeNames">
-								{% for loanee in all_loanees %}
-									<option data-phone="{{ loanee.phone_num }}" value="{{ loanee.name }}"></option>
-								{% endfor %}
-							</datalist>
-							{{ g.loanForm.name.label }}
-							<div class="invalid-feedback">
-								Please enter a name.
+						<div class="col-sm-5">
+							<div class="form-floating">
+								{{ g.loanForm.name(list=book.id|string + '-loaneeNames', oninput='populateUser(%d)' % book.id, id=book.id|string + '-name', class="form-control", placeholder="") }}
+								<datalist id="{{ book.id }}-loaneeNames">
+									{% for loanee in all_loanees %}
+										<option data-phone="{{ loanee.phone_num }}" value="{{ loanee.name }}"></option>
+									{% endfor %}
+								</datalist>
+								{{ g.loanForm.name.label }}
+								<div class="invalid-feedback">
+									Please enter a name.
+								</div>
+							</div>
+						</div>
+						
+						<div class="col-sm-3">
+							<div class="form-floating">
+								{{ g.loanForm.phone_num(class="form-control", id=book.id|string + '-phone_num', onkeydown='phoneNumberFormatter(%d)' % book.id, placeholder="") }}
+								{{ g.loanForm.phone_num.label }}
+								<div class="invalid-feedback">
+									Please enter a valid phone number (consisting of numbers).
+								</div>						  
 							</div>
 						</div>
 				
-						<div class="form-floating col-auto">
-							{{ g.loanForm.phone_num(class="form-control", id=book.id|string + '-phone_num', onkeydown='phoneNumberFormatter(%d)' % book.id, placeholder="") }}
-							{{ g.loanForm.phone_num.label }}
-							<div class="invalid-feedback">
-								Please enter a valid phone number (consisting of numbers).
-							</div>						  
-						</div>
-
-						<div class="form-floating col-sm-2">
-							{{ g.loanForm.loan_duration_length(class="form-control", placeholder="") }}
-							{{ g.loanForm.loan_duration_length.label }}
-							<div class="invalid-feedback">
-								Please enter a number.
+						<div class="col-sm-2">
+							<div class="form-floating">
+								{{ g.loanForm.loan_duration_length(class="form-control", placeholder="") }}
+								{{ g.loanForm.loan_duration_length.label }}
+								<div class="invalid-feedback">
+									Please enter a number.
+								</div>
 							</div>
 						</div>
 
-						<div class="form-floating col-sm-3">
-							{{ g.loanForm.loan_duration_unit(class="form-control") }}
-							{{ g.loanForm.loan_duration_unit.label }}
+						<div class="col-sm-2">
+							<div class="form-floating">
+								{{ g.loanForm.loan_duration_unit(class="form-control") }}
+								{{ g.loanForm.loan_duration_unit.label }}
+							</div>
 						</div>
-
+						
 					</div>
 
 					<div class="row justify-content-center">
@@ -94,6 +105,7 @@
 				</div>
 				{% endif %}
 				{% endwith %}
+				</div>
 
 			</div>
 

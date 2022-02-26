@@ -1,11 +1,11 @@
 
 <div class="modal" id="m{{ book.id }}-edit-modal" tabindex="-1" role="dialog" aria-labelledby="{{ book.id }}-edit-modal">
-		<div class="modal-dialog modal-xl" role="document">
+		<div class="modal-dialog modal-lg modal-fullscreen-sm-down" role="document">
 			<div class="modal-content">
 				<div class="modal-header justify-content-between">
 					<div style="display: block;">
-						<div id="modalHeader" class="modal-title">EDIT BOOK INFORMATION</div>
-						<div id="modalSubtitle" class="modal-title">CHANGE THE DESIRED FIELDS IN THE FORM BELOW.</div>
+						<h2 id="modalHeader" class="modal-title">EDIT BOOK INFORMATION</h2>
+						<small id="modalSubtitle" class="modal-title text-muted">CHANGE THE DESIRED FIELDS IN THE FORM BELOW.</small>
 					</div>
 					<div>
 						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -13,74 +13,76 @@
 				</div>
 
 
-      				<div class="modal-body" style="width: 60vw;">
-						<form id="{{ book.id }}-edit-form"class="form form-horizontal" method="post" action="{{ url_for('edit', book_id=book.id) }}">
-							{{ g.editForm.hidden_tag() }}
-						  <div class="row g-3 justify-content-center align-items-center mb-5">
-							  <div class="col-sm-3">
-								  <img width="150px" src="{{ book.cover }}">
-							  </div>
-							  <div class="col-sm-6">
-								<div class="form-floating">
-									  {{ g.editForm.full_title(class='form-control', default=book.full_title) }}
-									  {{ g.editForm.full_title.label }}
-									  {% for error in g.editForm.full_title.errors %}
-										  <span style="color: red;">[{{ error }}]</span>
-									  {% endfor %}
-								</div>
-
-								<div class="form-floating">
-									  {{ g.editForm.authors(class='form-control', default=list_authors(book.authors)) }}
-									  {{ g.editForm.authors.label }}
-									  {% for error in g.editForm.authors.errors %}
-										  <span style="color: red;">[{{ error }}]</span>
-									  {% endfor %}
-								</div>
-
-								<div class="form-floating">
-									  {{ g.editForm.pages(class='form-control', default=book.pages) }}
-									  {{ g.editForm.pages.label }}
-									  {% for error in g.editForm.pages.errors %}
-										  <span style="color: red;">[{{ error }}]</span>
-									  {% endfor %}
-								</div>
-
-								<div class="form-floating">
-									  {{ g.editForm.publish_date(class='form-control', default=book.publish_date.year) }}
-									  {{ g.editForm.publish_date.label }}
-									  {% for error in g.editForm.publish_date.errors %}
-										  <span style="color: red;">[{{ error }}]</span>
-									  {% endfor %}
-								</div>
-
-								<div class="form-floating">
-									  {{ g.editForm.category(list=book.id|string + '-edit-categories',class='form-control', default=book.book_category.name) }}
-									  <datalist id="{{ book.id }}-edit-categories">
-										  {% for category in book_categories %}
-										  	<option value="{{ category.name }}"></option>
+      				<div class="modal-body clearfix">
+						  <div class="container-fluid">
+							<form id="{{ book.id }}-edit-form"class="form form-horizontal" method="post" action="{{ url_for('edit', book_id=book.id) }}">
+								{{ g.editForm.hidden_tag() }}
+							  <div class="row g-3 justify-content-center align-items-center mb-5">
+								  <div class="col-sm-auto text-center">
+									  <img class="img-fluid" style="max-width: 150px;" src="{{ book.cover }}">
+								  </div>
+								  <div class="col-sm-9">
+									<div class="form-floating">
+										  {{ g.editForm.full_title(class='form-control', default=book.full_title) }}
+										  {{ g.editForm.full_title.label }}
+										  {% for error in g.editForm.full_title.errors %}
+											  <span style="color: red;">[{{ error }}]</span>
 										  {% endfor %}
-									  </datalist>
-									  {{ g.editForm.category.label }}
-									  {% for error in g.editForm.category.errors %}
-										  <span style="color: red;">[{{ error }}]</span>
-									  {% endfor %}
-								</div>
-
-								<div class="form-floating col-sm-7">
-									{{ g.editForm.number_of_copies(max=10 - book.num_available_copies(), class='form-control', default=book.num_total_copies()) }}
-									{{ g.editForm.number_of_copies.label }}
-									{% for error in g.editForm.number_of_copies.errors %}
-										<span style="color: red;">[{{ error }}]</span>
-									{% endfor %}
+									</div>
+	
+									<div class="form-floating">
+										  {{ g.editForm.authors(class='form-control', default=list_authors(book.authors)) }}
+										  {{ g.editForm.authors.label }}
+										  {% for error in g.editForm.authors.errors %}
+											  <span style="color: red;">[{{ error }}]</span>
+										  {% endfor %}
+									</div>
+	
+									<div class="form-floating">
+										  {{ g.editForm.pages(class='form-control', default=book.pages) }}
+										  {{ g.editForm.pages.label }}
+										  {% for error in g.editForm.pages.errors %}
+											  <span style="color: red;">[{{ error }}]</span>
+										  {% endfor %}
+									</div>
+	
+									<div class="form-floating">
+										  {{ g.editForm.publish_date(class='form-control', default=book.publish_date.year) }}
+										  {{ g.editForm.publish_date.label }}
+										  {% for error in g.editForm.publish_date.errors %}
+											  <span style="color: red;">[{{ error }}]</span>
+										  {% endfor %}
+									</div>
+	
+									<div class="form-floating">
+										  {{ g.editForm.category(list=book.id|string + '-edit-categories',class='form-control', default=book.book_category.name) }}
+										  <datalist id="{{ book.id }}-edit-categories">
+											  {% for category in book_categories %}
+												  <option value="{{ category.name }}"></option>
+											  {% endfor %}
+										  </datalist>
+										  {{ g.editForm.category.label }}
+										  {% for error in g.editForm.category.errors %}
+											  <span style="color: red;">[{{ error }}]</span>
+										  {% endfor %}
+									</div>
+	
+									<div class="form-floating col-sm-9">
+										{{ g.editForm.number_of_copies(max=10 - book.num_available_copies(), class='form-control', default=book.num_total_copies()) }}
+										{{ g.editForm.number_of_copies.label }}
+										{% for error in g.editForm.number_of_copies.errors %}
+											<span style="color: red;">[{{ error }}]</span>
+										{% endfor %}
+								  </div>
+	
+								  </div>
 							  </div>
-
+							  <div class="modal-footer">
+								<button type="button" class="btn btn-flat" data-bs-dismiss="modal">Close</button>
+								<button type="submit" class="btn btn-flat-black">Update</button>
 							  </div>
+							</form>
 						  </div>
-						  <div class="modal-footer">
-							<button type="button" class="btn btn-flat" data-bs-dismiss="modal">Close</button>
-							<button type="submit" class="btn btn-flat-black">Update</button>
-						  </div>
-						</form>
 	
       				</div>
 

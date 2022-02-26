@@ -7,9 +7,16 @@
 		#actions-header {
             font-family: 'Montserrat', sans-serif; 
 			color: black; 
-			font-size: 25px; 
 			letter-spacing: 0.1em;;
         }
+
+		.header-lg {
+			font-size: 25px;
+		}
+
+		.header-sm {
+			font-size: 19px;
+		}
 
         .action-btn {
             margin-right: 10px;
@@ -142,7 +149,7 @@
 {% endblock %}
 
 {% block app_content %}
-<div class="col-sm-8">
+<div class="col-sm-10">
 	<div class="row justify-content-center my-2">
 		<div id="actions-panel" style="background-color: #cfc8be;">
 			<div class="row justify-content-center align-items-center">
@@ -151,20 +158,25 @@
 				</div>
 				<div class="col-sm-7">
 					<div class="row justify-content-center my-2">
-						<div id="actions-header" class="col-sm-10">What would you like to do?</div>
+						<div class="d-none d-md-block">
+							<div id="actions-header" class="header-lg col-sm-10 text-center">What would you like to do?</div>
+						</div>
+						<div class="d-md-none text-center">
+							<h6 id="actions-header" class="header-sm">What would you like to do?</h6>
+						</div>
 					</div>
 					<div class="row justify-content-center gx-0">
-						<div class="col-sm-6">
+						<div class="col-sm-6 text-center mb-2">
 							<a href="{{ url_for('all_books') }}">
 								<button href="{{ url_for('all_books') }}" class="btn btn-flat-black action-btn btn-sm">
 									<span class="glyphicon glyphicon-book"></span><span class="mx-2">VIEW BOOKS IN COLLECTION</span>
 								</button>
 							</a>
 						</div>
-						<div class="col-sm-6">
+						<div class="col-sm-6 text-center mb-3">
 							<a href="{{ url_for('enter') }}">
 								<button class="btn btn-flat-black action-btn btn-sm">
-									<span class="glyphicon glyphicon-barcode"></span><span class="mx-1">ENTER BOOKS INTO COLLECTION</span>
+									<span class="glyphicon glyphicon-barcode"></span><span class="mx-1 text-nowrap">ENTER BOOKS INTO COLLECTION</span>
 								</button>
 							</a>
 						</div>
@@ -181,173 +193,181 @@
 		</div>
 	</div>
 
-	<div style="margin-top: 5em; margin-bottom: 2em; margin-left: -2em">
-		<div id="headerTitle">SEARCH LENDING HISTORY</div>
-		<div id="headerSubtitle">LOOK UP ACTIVE AND PAST LOANS ATTACHED TO A PHONE NUMBER OR NAME</div>
-	</div>
-
-	<form class="form" method="get" action="">
-		{{ loan_phone_form.hidden_tag() }}
-		<div class="row justify-content-center align-items-end">
-			<div class="col-auto mb-2" style="font-family: 'Barlow', sans-serif; font-size: 16px;">
-				Search by:
-			</div>
-			<div class="col-sm-2">
-				<div class="form-floating">
-					{{ loan_phone_form.search_type(class='form-control', placeholder="") }}
-				</div>
-			</div>
-			<div class="col-sm-5">
-				<div class="form-floating">
-					{{ loan_phone_form.q(list='loanee-names', class='form-control', placeholder="") }}
-					<div id="q-datalist-container">
-						<datalist id='loanee-names'>
-							{% for loanee in loanees %}
-								<option value="{{ loanee.name }}"></option>
-							{% endfor %}
-						</datalist>
-					</div>
-					{{ loan_phone_form.q.label }}
-				</div>
-			</div>
-			<div class="col-sm-2">
-				<button type=submit class="btn btn-flat btn-sm">Look Up</button>
-			</div>
+	<div class="container">
+		<div class="row justify-content-start" style="margin-top: 5em; margin-bottom: 2em; margin-left: auto;">
+			<h2 class="row justify-content-start" id="headerTitle">SEARCH LENDING HISTORY</h2>
+			<div class="row justify-content-start d-none d-md-block" id="headerSubtitle">LOOK UP ACTIVE AND PAST LOANS ATTACHED TO A PHONE NUMBER OR NAME</div>
+			<div class="row justify-content-start d-md-none" id="headerSubtitle">LOOK UP LENDING HISTORY FOR PERSON</div>
 		</div>
-	</form>
-
-
-
-	<div style="margin-top: 5em; margin-bottom: 2em; margin-left: -2em">
-		<div id="headerTitle"> LOANS EXPIRING IN < 1 WEEK </div>
-		<div id="headerSubtitle">{{ exp_loans['total'] }} LOAN(S) EXPIRING SOON</div>
-	</div>
-
-	{% if not exp_loans['items'] %}
-	<div class="row justify-content-center align-items-center">
-		<div class="card text-dark bg-light mb-3">
-			<div class="card-body">
-				<div class="row justify-content-center align-items-center">
-					<div class="col-sm-2 my-4 text-center">
-						<img width="100px" src="{{ url_for('static', filename='empty.png') }}">
+	
+		<form class="form" method="get" action="">
+			{{ loan_phone_form.hidden_tag() }}
+			<div class="container">
+				<div class="row justify-content-center align-items-end">
+					<!-- <div class="col-auto mb-3" style="font-family: 'Barlow', sans-serif; font-size: 16px;">
+						Search by:
+					</div> -->
+					<div class="col-sm-2 mb-3">
+						<div class="form-floating">
+							{{ loan_phone_form.search_type(class='form-control', placeholder="") }}
+							{{ loan_phone_form.search_type.label }}
+						</div>
+					</div>
+					<div class="col-sm-5 mb-3">
+						<div class="form-floating">
+							{{ loan_phone_form.q(list='loanee-names', class='form-control', placeholder="") }}
+							<div id="q-datalist-container">
+								<datalist id='loanee-names'>
+									{% for loanee in loanees %}
+										<option value="{{ loanee.name }}"></option>
+									{% endfor %}
+								</datalist>
+							</div>
+							{{ loan_phone_form.q.label }}
+						</div>
+					</div>
+					<div class="col-sm-2 mb-3">
+						<button type=submit class="btn btn-flat btn-sm">Look Up</button>
 					</div>
 				</div>
-				<div class="row justify-content-center align-items-center">
-					<span id="empty-text" class="col-sm-6 mb-4 mx-3 text-center"> NO EXPIRING LOANS AT THE MOMENT</span>
+			</div>
+		</form>
+	
+	
+	
+		<div class="row justify-content-start" style="margin-top: 5em; margin-bottom: 2em; margin-left: auto;">
+			<h3 class="row justify-content-start" id="headerTitle"> LOANS EXPIRING IN < 1 WEEK </h3>
+			<div class="row justify-content-start" id="headerSubtitle">{{ exp_loans['total'] }} LOAN(S) EXPIRING SOON</div>
+		</div>
+	
+		{% if not exp_loans['items'] %}
+		<div class="row justify-content-center align-items-center" style="margin: auto;">
+			<div class="card text-dark bg-light mb-3">
+				<div class="card-body">
+					<div class="row justify-content-center align-items-center">
+						<div class="col-sm-2 my-4 text-center">
+							<img width="100px" src="{{ url_for('static', filename='empty.png') }}">
+						</div>
+					</div>
+					<div class="row justify-content-center align-items-center">
+						<span id="empty-text" class="col-sm-6 mb-4 mx-3 text-center"> NO EXPIRING LOANS AT THE MOMENT</span>
+					</div>
+					
 				</div>
-				
 			</div>
 		</div>
-	</div>
-	{% endif %}
-
-	{% for loan in exp_loans['items'] %}
-			{% with book = loan.loaned_copy.work %}
-
-			<div>
-				{% if not loan.is_overdue() %}
-				<div class="card text-dark border-success mb-3">
-					<div style="background-color: #d1e7dd; color: #0f5132;" class="card-header">Status: <span style="font-weight: bold;">AWAY ON LOAN</span></div>
-				{% else %}
-				<div class="card text-dark border-danger mb-3">
-					<div style="background-color: #f1c3c3; color: #7c0101;" class="card-header">Status: <span style="font-weight: bold;">OVERDUE</span></div>
-				{% endif %}
-
-				
-
-					<div class="card-body">
-						<div class="row justify-content-between align-items-center">
-								<div class="col-sm-2">
-									<img width="125px" style="border-left: 3px black solid; padding-left: 15px;" src="{{ book.cover }}">
-								</div>
-
-								<div class="col-sm-5">
-									<div id="bookTitle"> {{ book.full_title.upper() }} </div>
-									<div id="bookAuthor">by: 
-										<span style="font-weight: bold;">
-											{% for author in list_authors(book.authors, as_list=True) %}
-													{{ author }}{% if not loop.last %},{% endif %}
-											{% endfor %}
-										</span>
+		{% endif %}
+	
+		{% for loan in exp_loans['items'] %}
+				{% with book = loan.loaned_copy.work %}
+	
+				<div>
+					{% if not loan.is_overdue() %}
+					<div class="card text-dark border-success mb-3">
+						<div style="background-color: #d1e7dd; color: #0f5132;" class="card-header">Status: <span style="font-weight: bold;">AWAY ON LOAN</span></div>
+					{% else %}
+					<div class="card text-dark border-danger mb-3">
+						<div style="background-color: #f1c3c3; color: #7c0101;" class="card-header">Status: <span style="font-weight: bold;">OVERDUE</span></div>
+					{% endif %}
+	
+					
+	
+						<div class="card-body">
+							<div class="row justify-content-between align-items-center">
+									<div class="col-sm-2">
+										<img class="img-fluid mb-2" style="max-width: 125px; border-left: 3px black solid; padding-left: 15px;" src="{{ book.cover }}">
 									</div>
-									<div style="margin-top: 1em;">
-										<div class="loanee-info"><i class="bi bi-person-circle"></i> <span style="font-weight: bold;">{{ loan.loaning_person.name }}</span></div>
-                                        <div class="loanee-info">
-											<i class="bi bi-telephone-fill"></i> 
+	
+									<div class="col-sm-5 mb-3">
+										<div id="bookTitle"> {{ book.full_title.upper() }} </div>
+										<div id="bookAuthor">by: 
 											<span style="font-weight: bold;">
-												{% if loan.loaning_person.phone_num %}
-													{{ loan.loaning_person.phone_num }}
-												{% else %}
-													-
-												{% endif %}
-												
+												{% for author in list_authors(book.authors, as_list=True) %}
+														{{ author }}{% if not loop.last %},{% endif %}
+												{% endfor %}
 											</span>
 										</div>
-										<div class="bookInOutDate"> DATE TAKEN OUT: <span style="font-weight: bold;">{{ loan.out_timestamp.strftime('%Y-%m-%d') }}</span></div>
-										<div class="bookInOutDate"> DUE DATE: <span style="font-weight: bold;">{{ loan.in_timestamp.strftime('%Y-%m-%d') }}</span></div>
+										<div style="margin-top: 1em;">
+											<div class="loanee-info"><i class="bi bi-person-circle"></i> <span style="font-weight: bold;">{{ loan.loaning_person.name }}</span></div>
+											<div class="loanee-info">
+												<i class="bi bi-telephone-fill"></i> 
+												<span style="font-weight: bold;">
+													{% if loan.loaning_person.phone_num %}
+														{{ loan.loaning_person.phone_num }}
+													{% else %}
+														-
+													{% endif %}
+													
+												</span>
+											</div>
+											<div class="bookInOutDate"> DATE TAKEN OUT: <span style="font-weight: bold;">{{ loan.out_timestamp.strftime('%Y-%m-%d') }}</span></div>
+											<div class="bookInOutDate"> DUE DATE: <span style="font-weight: bold;">{{ loan.in_timestamp.strftime('%Y-%m-%d') }}</span></div>
+										</div>
 									</div>
-								</div>
-
-								<div class="col-sm-5">
-									<div class="row">
-										<form class="form" method="post" action="{{ url_for('extend_loan', loan_id=loan.id) }}">
-											{{ g.editForm.hidden_tag() }}
-											<div class="row">
-												<label for="loan_duration_length" class="form-label col-sm-6">Extend Loan for:</label> 
-											</div>
-											
-											<div class="row justify-content-evenly align-items-end gx-0">
-												<div class="col-sm-4">
-													{{ g.loan_extend_form.loan_duration_length(class='form-control') }}
+	
+									<div class="col-sm-5">
+										<div class="row">
+											<form class="form" method="post" action="{{ url_for('extend_loan', loan_id=loan.id) }}">
+												{{ g.editForm.hidden_tag() }}
+												<div class="row">
+													<label for="loan_duration_length" class="form-label col-sm-6">Extend Loan for:</label> 
 												</div>
-												<div class="col-sm-4 dropdown">
-													{{ g.loan_extend_form.loan_duration_unit(class='form-control') }}
+												
+												<div class="row justify-content-evenly align-items-end gx-0">
+													<div class="col-4">
+														{{ g.loan_extend_form.loan_duration_length(class='form-control') }}
+													</div>
+													<div class="col-4 dropdown">
+														{{ g.loan_extend_form.loan_duration_unit(class='form-control') }}
+													</div>
+													<div class="col-3">
+														<button type=submit class="btn btn-flat btn-sm">Extend</button>
+													</div>
 												</div>
-												<div class="col-sm-3">
-													<button type=submit class="btn btn-flat btn-sm">Extend</button>
-												</div>
-											</div>
-										</form>
-									</div>
-
-									<div class="strike">
-   										<span>OR</span>
-   									</div>
-
-									
-									<div class="row justify-content-center">
-										<form class="form col-sm-8" method="post" action="{{ url_for('close_loan', loan_id=loan.id) }}">
-											{{ g.loan_close_form.hidden_tag() }}
-											<div>
-												<button type=submit class="btn btn-flat btn-sm">Return Book and Close Loan</button>
-											</div>
-										</form>
+											</form>
+										</div>
+	
+										<div class="strike">
+											   <span>OR</span>
+										   </div>
+	
 										
+										<div class="row justify-content-center">
+											<form class="form col-sm-8" method="post" action="{{ url_for('close_loan', loan_id=loan.id) }}">
+												{{ g.loan_close_form.hidden_tag() }}
+												<div class="text-center">
+													<button type=submit class="btn btn-flat btn-sm">Return Book and Close Loan</button>
+												</div>
+											</form>
+											
+										</div>
 									</div>
 								</div>
-							</div>
+						</div>
+	
 					</div>
-
 				</div>
-			</div>
+	
+				{% endwith %}
+		{% endfor %}
+	
+		<nav aria-label="...">
+			<ul class="pagination justify-content-center">
+				<li class="page-item{% if not prev_url %} disabled{% endif %}">
+					<a class="page-link" href="{{ prev_url or '#' }}">
+						<i class="bi bi-arrow-left"></i> PREVIOUS BOOKS
+					</a>
+				</li>
+				<li class="page-item{% if not next_url %} disabled{% endif %}">
+					<a class="page-link" href="{{ next_url or '#' }}">
+						MORE BOOKS <i class="bi bi-arrow-right"></i>
+					</a>
+				</li>
+			</ul>
+		</nav>
+	</div>
 
-			{% endwith %}
-	{% endfor %}
-
-	<nav aria-label="...">
-		<ul class="pagination justify-content-center">
-			<li class="page-item{% if not prev_url %} disabled{% endif %}">
-				<a class="page-link" href="{{ prev_url or '#' }}">
-					<i class="bi bi-arrow-left"></i> PREVIOUS BOOKS
-				</a>
-			</li>
-			<li class="page-item{% if not next_url %} disabled{% endif %}">
-				<a class="page-link" href="{{ next_url or '#' }}">
-					MORE BOOKS <i class="bi bi-arrow-right"></i>
-				</a>
-			</li>
-		</ul>
-	</nav>
+	
 
 </div>
 {% endblock %}

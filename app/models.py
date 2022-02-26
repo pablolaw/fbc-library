@@ -112,7 +112,7 @@ def load_user(id):
 class Category(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
 	name = db.Column(db.String(32), nullable=False, index=True)
-	books = db.relationship('Book', backref='book_category', lazy='dynamic')
+	books = db.relationship('Book', backref=db.backref('book_category', cascade="save-update"), lazy='dynamic')
 
 	def __repr__(self):
 		return f'<Category {self.name}>'
@@ -150,7 +150,6 @@ class Book(SearchableMixin, db.Model):
 	category = db.Column(db.Integer, db.ForeignKey('category.id')) # We assume that each book has at most 1 category
 	cover = db.Column(db.Text)
 	copies = db.relationship('Copy', backref='work', lazy='dynamic', cascade="all, delete")
-	# loans = db.relationship('Loan', backref='loaned_book', lazy='dynamic')
 
 	def __repr__(self):
 		return f'<Book {self.id}: {self.full_title}>'
@@ -167,19 +166,15 @@ class Book(SearchableMixin, db.Model):
 		# Return a str representation of authors
 		return ', '.join([a.name for a in self.authors])
 
-	def get_document(self):
-		return BookIndex(
+	def save_document(self):
+		self._doc = BookIndex(
 			_id=self.id,
 			full_title=self.full_title,
 			authors = self._author_repr()
 		)
 
-	# def save(self):
-	# 	try:
-	# 		self.get_document().save(index='book', using=elasticsearch)
-	# 	except ElasticsearchException as e:
-	# 		db.session.rollback()
-	# 		raise e
+	def get_document(self):
+		return self._doc
 
 	@staticmethod
 	def init_index():
@@ -272,42 +267,6 @@ class Book(SearchableMixin, db.Model):
 		q = Q("match", authors={'query': query_str, 'fuzziness': 1})
 		return Book.search(q, page, per_page)
 
-	@staticmethod
-	def search_advanced(query_dict, page, per_page):
-		# Returns a paginated object for books
-		if len(query_dict) < 1:
-			return None, 0
-
-		# Fuzzy search for book title and authors
-		q1, q2 = None, None
-		if 'full_title' in query_dict:
-			q1 = Q("match", full_title={'query':query_dict['full_title'], 'fuzziness': 1})
-			# query_dict.pop('full_title')
-		if 'authors' in query_dict:
-			q2 = Q("match", authors={'query': query_dict['authors'], 'fuzziness': 1})
-			# query_dict.pop('authors')
-		q = q1 & q2 if (q1 is not None and q2 is not None) else (q1 or q2)
-
-		if q:
-			books, _ = Book.search(q, page, per_page)
-		else:
-			books = Book.query
-
-		# Exact search for other book properties
-		if 'category' in query_dict:
-			books = books.join(Book.book_category).filter_by(name=query_dict['category'])
-			# query_dict.pop('category')
-		if 'publish_date' in query_dict:
-			books = books.filter(extract('year', Book.publish_date) == query_dict['publish_date']) # query date must be int
-			# query_dict.pop('publish_date')
-
-		# Get the rest
-		# if len(query_dict) > 0:
-		# 	books = books.filter_by(**query_dict)
-		total = len(books.all())
-		books = books.paginate(page, app.config['BOOKS_PER_PAGE'], False)
-		return books, total
-
 
 class BookIndex(Document):
 	full_title = Text()
@@ -391,14 +350,6 @@ class Loan(db.Model):
 	def is_overdue(self):
 		return self.is_active() and (self.in_timestamp < datetime.now().date())
 
-	# @staticmethod
-	# def get_loans(phone_num):
-	# 	# Returns a query object
-	# 	return Loan.query.filter_by(phone_num=phone_num).filter(Loan.book_id.isnot(None))
-
-	# @staticmethod
-	# def _get_book_active_loans(book_id):
-	# 	return Loan.filter_by(returned=False).join(Loan.copy_id).filter_by(book_id=book_id)
 
 	@staticmethod
 	def _get_book_loans(book_id):
@@ -495,12 +446,6 @@ class Loanee(SearchableMixin, db.Model):
 		loans = loanee.loans
 		return loans.all(), loans.count()
 
-	# def save(self):
-	# 	try:
-	# 		self.get_document().save(index='loanee', using=elasticsearch)
-	# 	except ElasticsearchException as e:
-	# 		db.session.rollback()
-	# 		raise e
 
 class LoaneeIndex(Document):
 	name = Text()

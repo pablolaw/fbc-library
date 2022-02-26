@@ -1,74 +1,93 @@
 
 <div class="form_label" style="margin-top: 20px;">
 	<form class="form form-horizontal" method="post" action="{{ url_for('search') }}">
-		<div class="row justify-content-between form-group g-0">
+		<div class="row justify-content-evenly align-items-end form-group">
 			{{ g.search_form.hidden_tag() }}
 
-			<div class="col-auto" style="margin-top: 6px; font-size: 16px;">
+			<!-- <div class="col-auto" style="margin-top: 6px; font-size: 16px;">
 				Search by:
+			</div> -->
+			<div class="col-sm-2 mb-2">
+				<div class="form-floating">
+					{{ g.search_form.search_type(class='form-control', id='searchTypeDropdown') }}
+					{{ g.search_form.search_type.label }}
+				</div>
 			</div>
-			<div class="col-sm-2">
-				<div id="searchTypeDropdown" class="selectpicker">{{ g.search_form.search_type(class='form-control') }}</div>
-			</div>
-			<div class="col-sm-7">
+			<div class="col-sm-9 mb-2">
 				{{ g.search_form.q(class='form-control', placeholder=g.search_form.q.label.text) }}
 			</div>
-			<div class="col-sm-1">
+			<div class="col-auto mb-2 d-none d-md-block">
+				<button type=submit class="btn btn-outline-secondary"><i class="bi bi-search"></i></button>
+			</div>
+		</div>
+		<div class="row justify-content-end my-2 d-none d-md-flex">
+			<div class="col-auto">
+				<button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#advancedSearchModal">Advanced Search</button>
+			</div>
+		</div>
+		<div class="row justify-content-end d-md-none gx-0 mb-2">
+			<div class="col-auto">
+				<button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#advancedSearchModal">Advanced Search</button>
+			</div>
+			<div class="col-auto">
 				<button type=submit class="btn btn-outline-secondary"><i class="bi bi-search"></i></button>
 			</div>
 		</div>
 	</form>
-	<div class="row justify-content-end my-2">
-		<div class="col-sm-2">
-			<button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#advancedSearchModal">Advanced Search</button>
-		</div>
-	</div>
+	
 </div>
 
 	<div class="modal" id="advancedSearchModal" tabindex="-1" role="dialog">
-		<div class="modal-dialog modal-lg" role="document">
-			<div class="modal-content" style="width: 60vw;">
+		<div class="modal-dialog modal-xl" role="document">
+			<div class="modal-content">
 				<div class="modal-header justify-content-between">
 					<div style="display: block;">
-						<div id="modalHeader" class="modal-title">ADVANCED SEARCH</div>
-						<div id="modalSubtitle" class="modal-title">USE THE FORM TO CONSTRUCT A QUERY.</div>
+						<h2 id="modalHeader" class="modal-title">ADVANCED SEARCH</h2>
+						<small id="modalSubtitle" class="modal-title text-muted">USE THE FORM TO CONSTRUCT A QUERY.</small>
 					</div>
 					<div>
 						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 					</div>
 				</div>
+
 				
-				<form class="form form-horizontal" method="post" action="{{ url_for('advanced_search') }}">
+				<form class="form form-horizontal" method="get" action="{{ url_for('advanced_search') }}">
 					<div class="modal-body">
-						<div class="row g-3 justify-content-center align-items-center mb-5">
-							{{ g.as_form.hidden_tag() }}
-							<div class="col-sm-3 ">
-								<image width="200px" src="{{ url_for('static', filename='advanced-search-icon.jpeg')}}"></image>
-							</div>
-
-							<div class="col-sm-6">
-								<div class="form-floating mb-3">
-									{{ g.as_form.full_title(class='form-control') }}
-									{{ g.as_form.full_title.label }}
+						
+						<div class="container-fluid">
+							<div class="row g-3 justify-content-center align-items-center mb-5">
+								<div>
+									<small class="text-muted">*At least one field must be non-empty.</small>
 								</div>
-								<div class="form-floating mb-3">
-									{{ g.as_form.authors(class='form-control') }}
-									{{ g.as_form.authors.label }}
+								{{ g.as_form.hidden_tag() }}
+								<div class="col-auto">
+									<image class="img-fluid" width="200px" src="{{ url_for('static', filename='advanced-search-icon.jpeg')}}"></image>
 								</div>
-
-								<div class="form-floating mb-3">
-									{{ g.as_form.publish_date(class='form-control') }}
-									{{ g.as_form.publish_date.label }}
-								</div>
-
-								<div class="form-floating mb-3">
-									<select class="form-control" id="category" name="category">
-										<option value="None">None</option>
-										{% for category in book_categories %}
-											<option value="{{ category.name }}">{{ category.name }}</option>
-										{% endfor %}
-									</select>
-									{{ g.as_form.category.label }}
+	
+								<div class="col-sm-9">
+									<div class="form-floating mb-3">
+										{{ g.as_form.full_title(class='form-control') }}
+										{{ g.as_form.full_title.label }}
+									</div>
+									<div class="form-floating mb-3">
+										{{ g.as_form.authors(class='form-control') }}
+										{{ g.as_form.authors.label }}
+									</div>
+	
+									<div class="form-floating mb-3">
+										{{ g.as_form.publish_date(class='form-control') }}
+										{{ g.as_form.publish_date.label }}
+									</div>
+	
+									<div class="form-floating mb-3">
+										<select class="form-control" id="category" name="category">
+											<option value="None">None</option>
+											{% for category in book_categories %}
+												<option value="{{ category.name }}">{{ category.name }}</option>
+											{% endfor %}
+										</select>
+										{{ g.as_form.category.label }}
+									</div>
 								</div>
 							</div>
 						</div>

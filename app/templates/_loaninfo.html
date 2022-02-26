@@ -12,7 +12,37 @@
         <div class="card-body">
             <div class="row justify-content-evenly align-items-center">
 
-                    <div class="col-sm-6">
+                    <div class="col-sm-6 d-md-none mb-3">
+                        {% with loanee = loan.loaning_person %}
+                        <div class="row">
+                            <span>
+                                <span class="loan-info-title">CONTACT NAME: </span>
+                                <span><a href="{{ url_for('loanee_history', q_type='Name', q=loanee.name) }}">{{ loanee.name }}</a></span>
+                            </span>
+                        </div>
+                        <div class="row">
+                            <span>
+                                <span class="loan-info-title">CONTACT PHONE: </span>
+                                <span>
+                                    {% if loanee.phone_num %}
+                                        {{ loanee.phone_num }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </span>
+                            </span>
+                        </div>
+                        <div class="row">
+                            <span>
+                                <span class="loan-info-title">DUE: </span>
+                                <span>{{ loan.in_timestamp.strftime('%Y-%m-%d') }}</span>
+                            </span>
+                            
+                        </div>
+                        {% endwith %}
+                    </div>
+
+                    <div class="col-sm-6 d-none d-md-flex">
                         <div class='row align-items-end justify-content-center'>
                             <div class="col-sm-6">
                                 <div class="row align-items-start">
@@ -54,15 +84,15 @@
                                 <div class="row">
                                     <label for="loan_duration_length" class="form-label col-sm-8">Extend Loan for:</label> 
                                 </div>
-                                
+    
                                 <div class="row justify-content-evenly align-items-end gx-0">
-                                    <div class="col-sm-4">
-                                        {{ g.loan_extend_form.loan_duration_length(class='form-control') }}
+                                    <div class="col-4">
+                                        {{ g.loan_extend_form.loan_duration_length(class='form-control', placeholder="e.g., 1") }}
                                     </div>
-                                    <div class="col-sm-4 dropdown">
+                                    <div class="col-4 dropdown">
                                         {{ g.loan_extend_form.loan_duration_unit(class='form-control') }}
                                     </div>
-                                    <div class="col-sm-3">
+                                    <div class="col-3">
                                         <button type="submit" class="btn btn-flat btn-sm">Extend</button>
                                     </div>
                                 </div>

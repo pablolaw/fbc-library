@@ -65,7 +65,6 @@
 			color: black; 
 			font-size: 20px;
 			margin-bottom: 10px; 
-			margin-left: -1em
 		}
 
 		.loan-result-header {
@@ -73,7 +72,6 @@
 			color: black; 
 			font-size: 15px;
 			margin-top: -11px;
-			margin-left: -1em;
 			margin-bottom: 1em;
 			letter-spacing: 0.1em; 
 		}
@@ -129,164 +127,172 @@
 {% endblock %}
 
 {% block app_content %}
-	<div class="col-sm-8">
-		<div style="margin-bottom: 2em; margin-left: -2em">
-			<div id="headerTitle">BORROWING HISTORY</div>
-			<div id="headerSubtitle">
-				VIEW CURRENT AND PAST LOANS MADE BY 
-				<span style="font-weight: bold;">
-					{{ loanee.name }}{% if loanee.phone_num %}, 
-					<i class="bi bi-telephone-fill"></i> {{ loanee.phone_num }}
-					{% endif %}
-				</span>
-			</div>
-			<div id="headerSubtitle">{{ curr_loans['count'] }} ACTIVE LOANS AND {{ past_loans['count'] }} PAST LOANS</div>
-		</div>
-
-		<div class="loan-type">CURRENT LOANS</div>
-
-		{% if not curr_loans['items'] %}
-		<div class="row justify-content-center align-items-center">
-			<div class="card text-dark bg-light mb-3">
-				<div class="card-body">
-					<div class="row justify-content-center align-items-center">
-						<div class="col-sm-2 my-4 text-center">
-							<img width="80px" src="{{ url_for('static', filename='empty.png') }}">
-						</div>
+	<div class="container">
+		<div class="row justify-content-center">
+			<div class="col-sm-10">
+				<div style="margin-bottom: 2em;">
+					<h2 id="headerTitle">BORROWING HISTORY</h2>
+					<div id="headerSubtitle">
+						FOR 
+						<span style="font-weight: bold;">
+							{{ loanee.name }}{% if loanee.phone_num %}, 
+							<i class="bi bi-telephone-fill"></i> {{ loanee.phone_num }}
+							{% endif %}
+						</span>
 					</div>
-					<div class="row justify-content-center align-items-center">
-						<span id="empty-text" class="col-sm-6 mb-4 mx-3 text-center"> NO CURRENT LOANS AT THE MOMENT</span>
-					</div>
-					
+					<div id="headerSubtitle">{{ curr_loans['count'] }} ACTIVE LOANS AND {{ past_loans['count'] }} PAST LOANS</div>
 				</div>
-			</div>
-		</div>
-		{% endif %}
-
-		{% for loan in curr_loans['items'] %}
-				{% with book = loan.loaned_copy.work %}
-
-				<div>
-					{% if not loan.is_overdue() %}
-					<div class="card text-dark border-success mb-3">
-						<div style="background-color: #d1e7dd; color: #0f5132;" class="card-header">Status: <span style="font-weight: bold;">AWAY ON LOAN</span></div>
-					{% else %}
-					<div class="card text-dark border-danger mb-3">
-						<div style="background-color: #f1c3c3; color: #7c0101;" class="card-header">Status: <span style="font-weight: bold;">OVERDUE</span></div>
-					{% endif %}
-	
-					
-	
+		
+				<div class="loan-type">CURRENT LOANS</div>
+		
+				{% if not curr_loans['items'] %}
+				<div class="row justify-content-center align-items-center" style="margin: auto;">
+					<div class="card text-dark bg-light mb-3">
 						<div class="card-body">
-							<div class="row justify-content-between">
-									<div class="col-lg-2">
-										<img width="125px" style="border-left: 3px black solid; padding-left: 15px;" src="{{ book.cover }}">
-									</div>
-	
-									<div class="col-lg-5">
-										<div id="bookTitle"> {{ book.full_title.upper() }} </div>
-										<div id="bookAuthor">by: 
-											<span style="font-weight: bold;">
-												{% for author in list_authors(book.authors, as_list=True) %}
-														{{ author }}{% if not loop.last %},{% endif %}
-												{% endfor %}
-											</span>
-										</div>
-										<div id="bookAuthor">Book Copy: {{ loan.copy_id }}</div>
-										<div style="margin-top: 1em;">
-											<div class="bookInOutDate"> DATE TAKEN OUT: <span style="font-weight: bold;">{{ loan.out_timestamp.strftime('%Y-%m-%d') }}</span></div>
-											<div class="bookInOutDate"> DUE DATE: <span style="font-weight: bold;">{{ loan.in_timestamp.strftime('%Y-%m-%d') }}</span></div>
-										</div>
-									</div>
-	
-									<div class="col-lg-5">
-										<div class="row">
-											<form class="form" method="post" action="{{ url_for('extend_loan', loan_id=loan.id) }}">
-												{{ g.editForm.hidden_tag() }}
-												<div class="row">
-													<label for="loan_duration_length" class="form-label col-lg-6">Extend Loan for:</label> 
-												</div>
-												
-												<div class="row justify-content-evenly align-items-end gx-0">
-													<div class="col-sm-4">
-														{{ g.loan_extend_form.loan_duration_length(class='form-control') }}
-													</div>
-													<div class="col-sm-4 dropdown">
-														{{ g.loan_extend_form.loan_duration_unit(class='form-control') }}
-													</div>
-													<div class="col-sm-3">
-														<button type=submit class="btn btn-flat btn-sm">Extend</button>
-													</div>
-												</div>
-											</form>
-										</div>
-	
-										<div class="strike">
-											   <span>OR</span>
-										   </div>
-	
-										
-										<div class="row justify-content-center">
-											<form class="form col-sm-8" method="post" action="{{ url_for('close_loan', loan_id=loan.id) }}">
-												{{ g.loan_close_form.hidden_tag() }}
-												<div>
-													<button type=submit class="btn btn-flat btn-sm">Return Book and Close Loan</button>
-												</div>
-											</form>
-											
-										</div>
-									</div>
+							<div class="row justify-content-center align-items-center">
+								<div class="col-sm-2 my-4 text-center">
+									<img width="80px" src="{{ url_for('static', filename='empty.png') }}">
 								</div>
+							</div>
+							<div class="row justify-content-center align-items-center">
+								<span id="empty-text" class="col-sm-6 mb-4 mx-3 text-center"> NO CURRENT LOANS AT THE MOMENT</span>
+							</div>
+							
 						</div>
-	
 					</div>
 				</div>
-
-				{% endwith %}
-		{% endfor %}
-
-		<div style="margin-top: 5em;">
-			<div class="row justify-content-between">
-				<div class="col-lg-3">
-					<div class="loan-type">PAST LOANS</div>
-					<div class="loan-result-header">{{ past_loans['count'] }} PAST LOAN(S) FOUND</div>
-				</div>
-				<button id="sortButton" type="button" class="col-sm-3 btn" style="font-family: 'Barlow', sans-serif; letter-spacing: 0.05em; margin-top: 15px; border-color: white;">
-					<i style="font-size: 1.4em;" class="bi bi-sort-numeric-down"></i> SORT BY RETURN DATE
-				</button>
-			</div>
-			<table class="table table-bordered" id="past_loans_table">
-				<thead>
-					<tr>
-						<th>TITLE</th>
-						<th>AUTHORS</th>
-						<th>BOOK COPY</th>
-						<th>CATEGORY</th>
-						<th>DATE TAKEN OUT</th>
-						<th>DATE RETURNED</th>
-					</tr>
-				</thead>
-				<tbody>
-					{% for loan in past_loans['items'] %}
+				{% endif %}
+		
+				{% for loan in curr_loans['items'] %}
 						{% with book = loan.loaned_copy.work %}
-						<tr>
-							<td>{{ book.full_title }}</td>
-							<td>
-								{% for author in list_authors(book.authors, as_list=True) %}
-									{{ author }}{% if not loop.last %},{% endif %}
-								{% endfor %}
-							</td>
-							<td>{{ loan.copy_id }}</td>
-							<td>{{ book.book_category.name }}</td>
-							<td>{{ loan.out_timestamp.strftime('%Y-%m-%d') }}</td>
-							<td>{{ loan.in_timestamp.strftime('%Y-%m-%d') }}</td>
-						</tr>
+		
+						<div>
+							{% if not loan.is_overdue() %}
+							<div class="card text-dark border-success mb-3">
+								<div style="background-color: #d1e7dd; color: #0f5132;" class="card-header">Status: <span style="font-weight: bold;">AWAY ON LOAN</span></div>
+							{% else %}
+							<div class="card text-dark border-danger mb-3">
+								<div style="background-color: #f1c3c3; color: #7c0101;" class="card-header">Status: <span style="font-weight: bold;">OVERDUE</span></div>
+							{% endif %}
+			
+							
+			
+								<div class="card-body">
+									<div class="row justify-content-between">
+											<div class="col-sm-2">
+												<img class="img-fluid mb-2" style="max-width: 125px; border-left: 3px black solid; padding-left: 15px;" src="{{ book.cover }}">
+											</div>
+			
+											<div class="col-sm-5">
+												<div id="bookTitle"> {{ book.full_title.upper() }} </div>
+												<div id="bookAuthor">by: 
+													<span style="font-weight: bold;">
+														{% for author in list_authors(book.authors, as_list=True) %}
+																{{ author }}{% if not loop.last %},{% endif %}
+														{% endfor %}
+													</span>
+												</div>
+												<div id="bookAuthor">Book Copy: {{ loan.copy_id }}</div>
+												<div style="margin-top: 1em;">
+													<div class="bookInOutDate"> DATE TAKEN OUT: <span style="font-weight: bold;">{{ loan.out_timestamp.strftime('%Y-%m-%d') }}</span></div>
+													<div class="bookInOutDate"> DUE DATE: <span style="font-weight: bold;">{{ loan.in_timestamp.strftime('%Y-%m-%d') }}</span></div>
+												</div>
+											</div>
+			
+											<div class="col-lg-5">
+												<div class="row">
+													<form class="form" method="post" action="{{ url_for('extend_loan', loan_id=loan.id) }}">
+														{{ g.editForm.hidden_tag() }}
+														<div class="row">
+															<label for="loan_duration_length" class="form-label col-lg-6">Extend Loan for:</label> 
+														</div>
+														
+														<div class="row justify-content-evenly align-items-end gx-0">
+															<div class="col-4">
+																{{ g.loan_extend_form.loan_duration_length(class='form-control') }}
+															</div>
+															<div class="col-4 dropdown">
+																{{ g.loan_extend_form.loan_duration_unit(class='form-control') }}
+															</div>
+															<div class="col-3">
+																<button type=submit class="btn btn-flat btn-sm">Extend</button>
+															</div>
+														</div>
+													</form>
+												</div>
+			
+												<div class="strike">
+													   <span>OR</span>
+												   </div>
+			
+												
+												<div class="row justify-content-center">
+													<form class="form col-sm-8 text-center" method="post" action="{{ url_for('close_loan', loan_id=loan.id) }}">
+														{{ g.loan_close_form.hidden_tag() }}
+														<div>
+															<button type=submit class="btn btn-flat btn-sm">Return Book and Close Loan</button>
+														</div>
+													</form>
+													
+												</div>
+											</div>
+										</div>
+								</div>
+			
+							</div>
+						</div>
+		
 						{% endwith %}
-					{% endfor %}
-				</tbody>
-			</table>
+				{% endfor %}
+		
+				<div style="margin-top: 5em;">
+					<div class="row justify-content-between">
+						<div class="col-lg-3">
+							<div class="loan-type">PAST LOANS</div>
+							<div class="loan-result-header">{{ past_loans['count'] }} PAST LOAN(S) FOUND</div>
+						</div>
+						<button id="sortButton" type="button" class="col-sm-3 btn" style="font-family: 'Barlow', sans-serif; letter-spacing: 0.05em; margin-top: 15px; border-color: white;">
+							<i style="font-size: 1.4em;" class="bi bi-sort-numeric-down"></i> SORT BY RETURN DATE
+						</button>
+					</div>
+					<div class="table-responsive-md">
+						<table class="table table-bordered" id="past_loans_table">
+							<thead>
+								<tr>
+									<th>TITLE</th>
+									<th>AUTHORS</th>
+									<th>BOOK COPY</th>
+									<th>CATEGORY</th>
+									<th>DATE TAKEN OUT</th>
+									<th>DATE RETURNED</th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for loan in past_loans['items'] %}
+									{% with book = loan.loaned_copy.work %}
+									<tr>
+										<td>{{ book.full_title }}</td>
+										<td>
+											{% for author in list_authors(book.authors, as_list=True) %}
+												{{ author }}{% if not loop.last %},{% endif %}
+											{% endfor %}
+										</td>
+										<td>{{ loan.copy_id }}</td>
+										<td>{{ book.book_category.name }}</td>
+										<td>{{ loan.out_timestamp.strftime('%Y-%m-%d') }}</td>
+										<td>{{ loan.in_timestamp.strftime('%Y-%m-%d') }}</td>
+									</tr>
+									{% endwith %}
+								{% endfor %}
+							</tbody>
+						</table>
+					</div>
+					
+				</div>
+			</div>
 		</div>
 	</div>
+	
 
 {% endblock %}
 

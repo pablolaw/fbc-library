@@ -84,6 +84,13 @@
 			padding-left: 15px;
 		}
 
+		#empty-text {
+			font-family: 'Barlow', sans-serif;
+			letter-spacing: 0.1em;
+			/* font-size: 1.2em; */
+			color: grey;
+		}
+
 	</style>
 {% endblock %}
 
@@ -148,40 +155,74 @@
 {% endblock %}
 
 {% block app_content %}
-	<div class="col-lg-8">
-		<div style="margin-bottom: 10px; margin-left: -2em">
-			<div id="headerTitle">VIEW COLLECTION</div>
-			<div id="headerSubtitle">{{ num_books }} BOOKS FOUND IN COLLECTION</div>
-		</div>
-	
-		{% if g.search_form %}
-			{% include '_searchbar.html' %}
+<div class="container">
+	<div class="row justify-content-center">
+		<div class="col-sm-10">
+			<div style="margin-bottom: 10px;">
+				{% if page_type == 'view' %}
+					<h2 id="headerTitle">VIEW COLLECTION</h2>
+				{% else %}
+					<h2 id="headerTitle">SEARCH COLLECTION</h2>
+					<h6 id="headerSubtitle">{{ search_type.upper() }} SEARCH: {{ search_query }}</h6>
+				{% endif %}
+				<h6 id="headerSubtitle">{{ num_books }} BOOK(S) FOUND IN COLLECTION</h6>
+			</div>
+		
+			{% if g.search_form %}
+				{% include '_searchbar.html' %}
+			{% endif %}
+		
+		<!-- 	<div class="container"> -->
+		{% if page_type == 'search' and not books %}
+			<div class="row justify-content-center align-items-center">
+				<div class="row justify-content-center align-items-center">
+					<div class="col-sm-2 my-4 text-center">
+						<img width="90px" src="{{ url_for('static', filename='no_results.png') }}">
+					</div>
+				</div>
+				<div class="row justify-content-center align-items-center text-center">
+					<span id="empty-text" class="col-sm-6 mb-4 mx-3"> YOUR SEARCH RETURNED NO RESULTS</span>
+				</div>
+			</div>
+		{% else %}
+			<div class="table-responsive mb-5">
+				<table class="table table-hover">
+				{% for book in books %}
+					{% include '_bookentry.html' %}
+				{% endfor %}
+				</table>
+			</div>
 		{% endif %}
 	
-	<!-- 	<div class="container"> -->
-	<div class="table-responsive mb-5">
-		<table class="table table-hover">
 		{% for book in books %}
-			{% include '_bookentry.html' %}
-		{% endfor %}
-		</table>
-	</div>
-	<!-- 	</div> -->
+			{% include '_editmodal.html' %}
 	
-		<nav aria-label="...">
-			<ul class="pagination justify-content-center">
-				<li class="page-item{% if not prev_url %} disabled{% endif %}">
-					<a class="page-link" href="{{ prev_url or '#' }}">
-						<i class="bi bi-arrow-left"></i> PREVIOUS BOOKS
-					</a>
-				</li>
-				<li class="page-item{% if not next_url %} disabled{% endif %}">
-					<a class="page-link" href="{{ next_url or '#' }}">
-						MORE BOOKS <i class="bi bi-arrow-right"></i>
-					</a>
-				</li>
-			</ul>
-		</nav>
+			{% include '_loanmodal.html' %}
+			
+			{% if book.all_copies_available() %}
+				{% include '_deletemodal.html' %}
+			{% endif %}
+		{% endfor %}
+		<!-- 	</div> -->
+		
+			<nav aria-label="...">
+				<ul class="pagination justify-content-center">
+					<li class="page-item{% if not prev_url %} disabled{% endif %}">
+						<a class="page-link" href="{{ prev_url or '#' }}">
+							<i class="bi bi-arrow-left"></i> PREVIOUS BOOKS
+						</a>
+					</li>
+					<li class="page-item{% if not next_url %} disabled{% endif %}">
+						<a class="page-link" href="{{ next_url or '#' }}">
+							MORE BOOKS <i class="bi bi-arrow-right"></i>
+						</a>
+					</li>
+				</ul>
+			</nav>
+		</div>
 	</div>
+	
+</div>
+	
 	
 {% endblock %}

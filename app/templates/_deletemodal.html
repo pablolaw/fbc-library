@@ -4,8 +4,8 @@
 		<div class="modal-content">
 			<div class="modal-header justify-content-between">
 				<div style="display: block;">
-					<div id="modalHeader" class="modal-title">DELETE BOOK FROM COLLECTION</div>
-					<div id="modalSubtitle" class="modal-title">DELETE THE FOLLOWING BOOK FROM THE COLLECTION? YOU WON'T BE ABLE TO RETRIEVE THE BOOK AFTER DELETION.</div>
+					<h2 id="modalHeader" class="modal-title">ARE YOU SURE?</h2>
+					<small id="modalSubtitle" class="text-muted modal-title d-none d-md-block">YOU WON'T BE ABLE TO RETRIEVE THE BOOK AFTER DELETION.</small>
 				</div>
 				<div>
 					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -13,6 +13,10 @@
       		</div>
 
       		<div class="modal-body">
+
+				<div class="delete-warning d-md-none text-muted">
+					<p>After deleting the following book from the collection, you will no longer be able to view its information or lend it out.</p>
+				</div>
 				<div class="card" style="margin-bottom: 1em">
 					<div class="card-body"> 
 						<div class="row justify-content-end">

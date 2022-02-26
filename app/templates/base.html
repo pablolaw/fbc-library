@@ -27,21 +27,22 @@
 
 {% block navbar %}
 	<nav class="navbar navbar-expand-lg navbar-light bg-white">
-		<div class="container-fluid">
-				<div class="container-fluid my-3">
-					{% if not current_user.is_anonymous %}
-					<a href="{{ url_for('index') }}" class="col-xs-3 navbar-brand mx-5">
-						<img id="logo" width="120px" src="{{ url_for('static', filename='FBC_logo_black-book.gif') }}">
-						<span id="logo-text" class="mx-2">LIBRARY</span>
-					</a>
-					{% endif %}
-				</div>
+		<!-- <div class="container-fluid"> -->
+				{% if not current_user.is_anonymous %}
+				<a href="{{ url_for('index') }}" class="navbar-brand mx-5 d-none d-md-block">
+					<img class="img-fluid" id="logo" width="120px" src="{{ url_for('static', filename='FBC_logo_black-book.gif') }}">
+					<span id="logo-text" class="mx-2">LIBRARY</span>
+				</a>
+				<a href="{{ url_for('index') }}" class="navbar-brand d-md-none">
+					<img class="img-fluid" id="logo" width="100px" src="{{ url_for('static', filename='FBC_logo_black-book.gif') }}">
+				</a>
+				{% endif %}
 			
 			<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
 				<span class="navbar-toggler-icon"></span>
 			</button>
 			<div class="collapse navbar-collapse" id="navbarSupportedContent">
-				<ul class="navbar-nav me-auto mb-2 mb-lg-0 text-nowrap">
+				<ul class="navbar-nav text-center ms-auto mb-lg-0 text-nowrap">
 					{% if not current_user.is_anonymous %}
 						{{ render_nav_item('all_books', 'VIEW COLLECTION') }}
 						{{ render_nav_item('enter', 'SCAN BOOKS')}}
@@ -54,7 +55,7 @@
 					{% endif %}
 				</ul>
 			</div>
-		</div>
+		<!-- </div> -->
 	</nav>
 	<hr style="border-color: black;"/>
 {% endblock %}
@@ -107,6 +108,7 @@
 	{{ super() }}
 	<script src="https://unpkg.com/libphonenumber-js@1.x/bundle/libphonenumber-min.js"></script>
 	<script>
+		screen.orientation.lock('portrait');
 
 		function populateDefaultFields(modalElem) {
 			$(modalElem).modal('show')
