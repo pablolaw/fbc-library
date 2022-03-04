@@ -58,13 +58,9 @@
 					).done(function(response) {
 						$('#modalContentContainer').html(`{% include '_entermodal_loaded.html' %}`)
 						populateFields('#enter-modal', response)
-					}).fail(function() {
-						console.log('Something wrong')
-					});
+					}).fail(() => {});
 				closeScanner()
 				_isScannerOn = false;
-				} else {
-					console.log(`Invalid ISBN detected: ${detected.code}. Resuming...`)
 				}
 			});
 		});
@@ -77,13 +73,15 @@
 			}
 			data['number_of_copies'] = 1
 			modal.find('#cover_container').html(`<img width='200px' src="${cover_url}">`)
-			for (let key in data) {
-				modal.find('#' + key)[0].value = data[key];
+			for (const key in data) {
+				if (modal.find('#' + key)[0]) {
+					modal.find('#' + key)[0].value = data[key];
+				}
 			}
 		}
 
 		function startScanner(height, width) {
-			console.log(height, width)
+			// console.log(height, width)
 			$('#camera_container').empty()
 			$('#scannerBtn').children()[1].textContent = "CLOSE SCANNER"
 			Quagga.init({
@@ -97,18 +95,13 @@
 						facingMode: "environment"
 					}
 				},
-				locate: true,
-				locator: {
-					halfSample: true,
-					patchSize: "small"
-
-				},
+				locate: false,
 				decoder: {
 					readers: [
 						"ean_reader",
 						"upc_reader"
 					]
-				}
+				},
 			}, function(err) {
 				if (err) {
 					console.log(err);

@@ -319,7 +319,7 @@ def search_author(author_name):
 @app.route('/books/advanced', methods=['GET'])
 @login_required
 def advanced_search():
-	as_form = AdvancedSearchForm(request.args)
+	as_form = AdvancedSearchForm(request.args, meta={'csrf': False})
 	as_form.category.choices = [None] + [c.name for c in Category.query.order_by('name')]
 	if not as_form.validate():
 		flash('Unable to query via advanced search. Check that at least one field is not empty and try again.', 'error')
@@ -518,6 +518,30 @@ def book_history(book: Book) -> str:
 	}
 
 	return render_template('book_history.html', **context)
+
+@app.route('/loanee/validate', methods=['POST'])
+@login_required
+def check_loanee_exists():
+	if request.form['search_type'] == 'Name':
+		loanee = Loanee.get_by_name(request.form['q'])
+	elif request.form['search_type'] == 'Phone':
+		loanee = Loanee.get_by_phone(request.form['q'])
+	else:
+		payload = {'error': HTTP_STATUS_CODES.get(400, 'Unknown error')}
+		payload['message'] = "Loanee information type must be one of 'Name' or 'Phone'"
+		response = jsonify(payload)
+		response.status_code = 400
+		return response
+	
+	if not loanee:
+		payload = {'error': HTTP_STATUS_CODES.get(404, 'Unknown error')}
+		payload['message'] = f"Loanee with {request.form.get('search_type')}: {request.form.get('q')} does not exist."
+		response = jsonify(payload)
+		response.status_code = 404
+		return response
+
+	return jsonify({'status_code': 200})
+
 
 @app.route('/loanee/<q_type>/<q>', methods=['GET'])
 @login_required

@@ -115,7 +115,11 @@
 				if (e.target.value === 'Phone') {
 					$("label[for='q']")[0].innerText = 'Contact Phone';
 					$('#q-datalist-container').html('')
-					$("#q").keydown(phoneNumberFormatter)
+					$('#q').attr('maxlength', 14)
+					$("#q").on('input', function (e) {
+						const formattedNum = phoneNumberFormatter(e.target.value)
+						e.target.value = formattedNum
+					})
 				} else if (e.target.value === 'Name') {
 					$("label[for='q']")[0].innerText = 'Contact Name';
 					$('#q-datalist-container').html(`
@@ -124,17 +128,40 @@
 							<option value="{{ loanee.name }}"></option>
 						{% endfor %}
 					</datalist>`)
-					$('#q').off('keydown')
+					$('#q').off('input')
+					$('#q').removeAttr('maxlength')
 				}
+			})
+
+			// $('#q').blur(function(e) {
+			// 	if (e.relatedTarget != $('#q-search-btn')) checkLoaneeExists();
+			// })
+
+			$('#q').change(function(e) {
+				$(this).removeClass('is-invalid');
+				$(this).get(0).setCustomValidity("");
+			})
+
+			$('#loan-lookup-form').submit(async function(e) {
+
+				e.preventDefault()
+				
+				$('#loan-lookup-form').addClass('was-validated');
+				if ($('#loan-lookup-form').get(0).checkValidity() && await checkLoaneeExists()) {
+					e.currentTarget.submit();
+				} 
 			})
 
 		});
 
-		function phoneNumberFormatter() {
-			elem = '#q'
+		function phoneNumberFormatter(value) {
+			if (!value) return '';
+			value = value.toString();
+			if (value.includes('(') && !value.includes(')')) {
+        		return value.replace('(', '');
+    		}
 			const asYouType = new libphonenumber.AsYouType('US')
-			const formattedPhoneNum = asYouType.input($(elem)[0].value)
-			$(elem)[0].value = formattedPhoneNum
+			return asYouType.input(value)
 		}
 
 		function deleteBook(book_isbn) {
@@ -145,6 +172,42 @@
 				window.location.reload()
 			})
 		}
+
+		async function validateLoanee(searchType, q) {
+			let result;
+			try {
+				result = await $.post('/loanee/validate', 
+				{
+					search_type: searchType, 
+					q: q
+				})
+
+				return true
+			} catch (e) {
+				return false
+			}
+			
+		}
+
+		async function checkLoaneeExists() {
+			const searchType = $('#search_type').val()
+			const q = $('#q').val()
+			const valid = await validateLoanee(searchType, q)
+			
+			if (valid) {
+				$('#q').addClass("is-valid")
+				$('#q').removeClass("is-invalid")
+				$('#q').get(0).setCustomValidity("")
+			} else {
+				$('#q').addClass("is-invalid")
+				$('#q').removeClass("is-valid")
+				$('#q').get(0).setCustomValidity("invalid")
+			}
+
+			return valid
+		}
+
+
 	</script>
 {% endblock %}
 
@@ -200,10 +263,10 @@
 			<div class="row justify-content-start d-md-none" id="headerSubtitle">LOOK UP LENDING HISTORY FOR PERSON</div>
 		</div>
 	
-		<form class="form" method="get" action="">
+		<form id="loan-lookup-form" class="form needs-validation" method="get" action="" novalidate>
 			{{ loan_phone_form.hidden_tag() }}
 			<div class="container">
-				<div class="row justify-content-center align-items-end">
+				<div class="row justify-content-center align-items-top">
 					<!-- <div class="col-auto mb-3" style="font-family: 'Barlow', sans-serif; font-size: 16px;">
 						Search by:
 					</div> -->
@@ -224,10 +287,13 @@
 								</datalist>
 							</div>
 							{{ loan_phone_form.q.label }}
+							<div id="validationQuery" class="invalid-feedback">
+								Name/phone number does not exist.
+							</div>
 						</div>
 					</div>
-					<div class="col-sm-2 mb-3">
-						<button type=submit class="btn btn-flat btn-sm">Look Up</button>
+					<div class="col-sm-2 mb-3 align-self-center">
+						<button id="q-search-btn" type=submit class="btn btn-flat btn-sm">Look Up</button>
 					</div>
 				</div>
 			</div>

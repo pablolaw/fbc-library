@@ -20,11 +20,6 @@
 				<button type=submit class="btn btn-outline-secondary"><i class="bi bi-search"></i></button>
 			</div>
 		</div>
-		<div class="row justify-content-end my-2 d-none d-md-flex">
-			<div class="col-auto">
-				<button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#advancedSearchModal">Advanced Search</button>
-			</div>
-		</div>
 		<div class="row justify-content-end d-md-none gx-0 mb-2">
 			<div class="col-auto">
 				<button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#advancedSearchModal">Advanced Search</button>
@@ -34,6 +29,11 @@
 			</div>
 		</div>
 	</form>
+	<div class="row justify-content-end my-2 d-none d-md-flex">
+		<div class="col-auto">
+			<button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#advancedSearchModal">Advanced Search</button>
+		</div>
+	</div>
 	
 </div>
 
@@ -51,7 +51,7 @@
 				</div>
 
 				
-				<form class="form form-horizontal" method="get" action="{{ url_for('advanced_search') }}">
+				<form id="advanced-search-form" class="form form-horizontal needs-validation" method="get" action="{{ url_for('advanced_search') }}" novalidate>
 					<div class="modal-body">
 						
 						<div class="container-fluid">
@@ -68,15 +68,24 @@
 									<div class="form-floating mb-3">
 										{{ g.as_form.full_title(class='form-control') }}
 										{{ g.as_form.full_title.label }}
+										<div class="invalid-feedback">
+											At least one field must be non-empty.
+										</div>
 									</div>
 									<div class="form-floating mb-3">
 										{{ g.as_form.authors(class='form-control') }}
 										{{ g.as_form.authors.label }}
+										<div class="invalid-feedback">
+											At least one field must be non-empty.
+										</div>
 									</div>
 	
 									<div class="form-floating mb-3">
 										{{ g.as_form.publish_date(class='form-control') }}
 										{{ g.as_form.publish_date.label }}
+										<div class="invalid-feedback">
+											At least one field must be non-empty.
+										</div>
 									</div>
 	
 									<div class="form-floating mb-3">
@@ -87,6 +96,9 @@
 											{% endfor %}
 										</select>
 										{{ g.as_form.category.label }}
+										<div class="invalid-feedback">
+											At least one field must be non-empty.
+										</div>
 									</div>
 								</div>
 							</div>

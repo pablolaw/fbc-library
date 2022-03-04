@@ -19,20 +19,12 @@ def date_validator(form, field):
 class SearchForm(FlaskForm):
 	search_type = SelectField('Search By: ', choices=['Keyword', 'Title', 'Author'], default='Keyword')
 	q = StringField('Search', validators=[DataRequired()])
-	# submit = SubmitField('Search')
-
-	# def __init__(self, *args, **kwargs):
-	# 	if 'formdata' not in kwargs:
-	# 		kwargs['formdata'] = request.args
-	# 	# if 'csrf_enabled' not in kwargs:
-	# 	# 	kwargs['csrf_enabled'] = False
-	# 	super(SearchForm, self).__init__(*args, **kwargs)
 
 
 class AdvancedSearchForm(FlaskForm):
 	full_title = StringField('Full Title', validators=[Optional(), Length(min=0, max=100)])
 	authors = StringField('Authors', validators=[Optional()])
-	publish_date = IntegerField('Year of Publication', validators=[Optional()])
+	publish_date = IntegerField('Year of Publication', validators=[Optional(), NumberRange(min=1)])
 	category = SelectField('Category', choices=[None], default=None, validators=[Optional()])
 
 	def __init__(self, *args, **kwargs):

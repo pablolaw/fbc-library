@@ -109,6 +109,7 @@
 	<script src="https://unpkg.com/libphonenumber-js@1.x/bundle/libphonenumber-min.js"></script>
 	<script>
 		screen.orientation.lock('portrait');
+		const asYouType = new libphonenumber.AsYouType('US');
 
 		function populateDefaultFields(modalElem) {
 			$(modalElem).modal('show')
@@ -126,8 +127,8 @@
 		}
 
 		function phoneNumberFormatter() {
-			const asYouType = new libphonenumber.AsYouType('US')
 			const formattedPhoneNum = asYouType.input($('#phone_num')[0].value)
+			console.log(formattedPhoneNum)
 			$('#phone_num')[0].value = formattedPhoneNum
 		}
 	</script>

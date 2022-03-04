@@ -107,18 +107,19 @@
 		$(function() {
 			'use strict'
 
-			$('.needs-validation').each(function () {
-				console.log('Adding onSubmit event hander...', $(this).isValid())
-				$(this).submit(function(event) {
-					console.log(event)
-					if (!$(this).isValid()) {
-						console.log('VALIDATION FAILED.')
-						event.preventDefault()
-						event.stopPropagation()
-					}
-
-					$(this).addClass('was-validated')
+			$('#advanced-search-form .form-control').change(function(e) {
+				$('#advanced-search-form .form-control').each(function () {
+					$(this).removeClass("is-invalid")
+					$(this).get(0).setCustomValidity("")
 				})
+			})
+
+			$('#advanced-search-form').submit(function(e) {
+				e.preventDefault()
+				$('#advanced-search-form').addClass('was-validated');
+				if ($('#advanced-search-form').get(0).checkValidity() && checkSearchValidation()) {
+					e.currentTarget.submit();
+				} 
 			})
 
 		})
@@ -132,10 +133,45 @@
 			})
 		}
 
+		function validateSearch() {
+			console.log("Validating each field...")
+			return !$('#advanced-search-form .form-control').toArray().every(function(elem) {
+				return elem.value === '' || elem.value === 'None'
+			})
+		}
+
+		function checkSearchValidation() {
+			const valid = validateSearch()
+			if (valid) {
+				$('#advanced-search-form .form-control').each(function () {
+					$(this).addClass("is-valid")
+					$(this).removeClass("is-invalid")
+					$(this).get(0).setCustomValidity("")
+				})
+			} else {
+				$('#advanced-search-form .form-control').each(function () {
+					$(this).addClass("is-invalid")
+					$(this).removeClass("is-valid")
+					$(this).get(0).setCustomValidity("Invalid field")
+				})
+			}
+
+			return valid
+		}
+
+		function parsePhoneNumber(value) {
+			if (!value) return '';
+			value = value.toString();
+			if (value.includes('(') && !value.includes(')')) {
+        		return value.replace('(', '');
+    		}
+			const asYouType = new libphonenumber.AsYouType('US')
+			return asYouType.input(value)
+		}
+
 		function phoneNumberFormatter(book_id) {
 			elem = '#' + String(book_id) + '-phone_num'
-			const asYouType = new libphonenumber.AsYouType('US')
-			const formattedPhoneNum = asYouType.input($(elem)[0].value)
+			const formattedPhoneNum = parsePhoneNumber($(elem)[0].value)
 			$(elem)[0].value = formattedPhoneNum
 		}
 
