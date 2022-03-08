@@ -33,7 +33,19 @@ class SearchableMixin(object): # COULD MOVE FUNCTIONS DEPENDENT ON ELASTICSEARCH
 		s = s[(page - 1) * per_page: page * per_page]
 		s = s.query(query)
 		response = s.execute()
-		ids = [int(hit.meta.id) for hit in response.hits]
+		ids = []
+		for hit in response.hits:
+			try:
+				id = int(hit.meta.id)
+			except ValueError:
+				ent = cls.query.filter_by(full_title=hit.full_title).first() # ONLY WORKS FOR BOOK; MAKE MORE GENERAL
+				if ent: # If book is somehow indexed but not in database (never true)
+					id = ent.id
+				else:
+					id = 0
+			finally:
+				if id != 0:
+					ids.append(id)
 		total = response.hits.total.value
 		if total == 0:
 			return cls.query.filter_by(id=0), 0

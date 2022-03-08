@@ -222,11 +222,10 @@ class BookBuilder:
         return deleted_ids, num_created
 
     def enter_cover(self, cover_url: str):
-        if cover_url:
-            if cover_url == '':
-                self._book.cover = url_for('static', filename='nocover.jpg')
-            else:
-                self._book.cover = cover_url
+        if cover_url is None or cover_url == '':
+            self._book.cover = url_for('static', filename='nocover.jpg')
+        else:
+            self._book.cover = cover_url
         return self
 
     def enter_authors(self, author_str: str):
