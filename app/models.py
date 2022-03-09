@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from typing import Dict
 from app import db, login, elasticsearch, app
 from flask_login import UserMixin
 from flask import url_for
@@ -17,6 +18,10 @@ class SearchableMixin(object): # COULD MOVE FUNCTIONS DEPENDENT ON ELASTICSEARCH
 	def get_document(self):
 		raise NotImplementedError("Need to define document structure for model")
 
+	@staticmethod
+	def validate_document_id(hit_obj) -> int:
+		raise NotImplementedError("Need to define validation for document id")
+
 	# def save(self):
 	# 	# try:
 	# 	# 	self.get_document().save(index=cls.__tablename__, using=elasticsearch)
@@ -33,21 +38,9 @@ class SearchableMixin(object): # COULD MOVE FUNCTIONS DEPENDENT ON ELASTICSEARCH
 		s = s[(page - 1) * per_page: page * per_page]
 		s = s.query(query)
 		response = s.execute()
-		ids = []
-		for hit in response.hits:
-			try:
-				id = int(hit.meta.id)
-			except ValueError:
-				ent = cls.query.filter_by(full_title=hit.full_title).first() # ONLY WORKS FOR BOOK; MAKE MORE GENERAL
-				if ent: # If book is somehow indexed but not in database (never true)
-					id = ent.id
-				else:
-					id = 0
-			finally:
-				if id != 0:
-					ids.append(id)
+		ids = [cls.validate_document_id(hit) for hit in response.hits if cls.validate_document_id(hit) != 0]
 		total = response.hits.total.value
-		if total == 0:
+		if total == 0 or ids == []:
 			return cls.query.filter_by(id=0), 0
 		when = [(_id, i) for (i, _id) in enumerate(ids)]
 		return cls.query.filter(cls.id.in_(ids)).order_by(
@@ -65,10 +58,10 @@ class SearchableMixin(object): # COULD MOVE FUNCTIONS DEPENDENT ON ELASTICSEARCH
 	def after_commit(cls, session):
 		for obj in session._changes['add']:
 			if isinstance(obj, SearchableMixin):
-				obj.get_document().save(index=obj.__tablename__, using=elasticsearch)
+				obj.get_document().save(id=obj.id, index=obj.__tablename__, using=elasticsearch)
 		for obj in session._changes['update']:
 			if isinstance(obj, SearchableMixin):
-				obj.get_document().save(index=obj.__tablename__, using=elasticsearch)
+				obj.get_document().save(id=obj.id, index=obj.__tablename__, using=elasticsearch)
 		for obj in session._changes['delete']:
 			if isinstance(obj, SearchableMixin):
 				s = Search(using=elasticsearch, index=obj.__tablename__).query("match", _id=obj.id)
@@ -180,13 +173,28 @@ class Book(SearchableMixin, db.Model):
 
 	def save_document(self):
 		self._doc = BookIndex(
-			_id=self.id,
+			# meta={'id': self.id}, # Can be null at time of executiion resulting in non-int id in elasticsearch
 			full_title=self.full_title,
 			authors = self._author_repr()
 		)
 
 	def get_document(self):
+		print(f"About to add document for indexing: {self._doc}")
 		return self._doc
+
+	@staticmethod
+	def validate_document_id(hit_obj) -> int:
+		# To accomodate elasticsearch docs with non-int ids
+		try:
+			ret_int = int(hit_obj.meta.id)
+		except ValueError:
+			book = Book.query.filter_by(full_title=hit_obj.full_title).first()
+			if book:
+				ret_int = book.id
+			else:
+				ret_int = 0
+		return ret_int
+			
 
 	@staticmethod
 	def init_index():
