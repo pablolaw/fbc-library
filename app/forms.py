@@ -57,7 +57,7 @@ class BookLookUpForm(FlaskForm):
 
 class BookEditForm(FlaskForm):
 	full_title = StringField('Full Title (required)', validators=[DataRequired(), Length(min=0, max=100)])
-	pages = IntegerField('Number of Pages', validators=[NumberRange(min=0)])
+	pages = IntegerField('Number of Pages', validators=[Optional(), NumberRange(min=0)])
 	publish_date = StringField('Publish Date', validators=[date_validator])
 	category = StringField('Category (required)', validators=[DataRequired(), Length(max=32)])
 	authors = StringField('Authors (required)', validators=[DataRequired()])
