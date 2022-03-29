@@ -14,6 +14,7 @@ from functools import wraps
 from app.search import SearchBuilder
 from app.book_util import BookBuilder, BookInfoBuilder
 from isbn import ISBNError
+from sentry_sdk import capture_event, capture_message
 
 # UTILITY FUNCTIONS (should probably put these somewhere else...)
 
@@ -280,6 +281,7 @@ def edit(book: Book) -> Any:
 		elif num_changed < 0:
 			flash(f'{-num_changed} copies of Book <{book.full_title}> were deleted from the collection.', 'info')
 	else:
+		capture_event(f"Error editing: {g.editForm.errors.items()}")
 		if 'number_of_copies' in g.editForm.errors:
 			max_copies = app.config['MAX_NUMBER_OF_COPIES']
 			flash(f'400: Total number of copies in collection must be between 1 and {max_copies}.', 'error')
