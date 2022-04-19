@@ -209,7 +209,7 @@
 			{% endif %}
 		
 		<!-- 	<div class="container"> -->
-		{% if page_type == 'search' and not books %}
+		{% if page_type == 'search' and not books['items'] %}
 			<div class="row justify-content-center align-items-center">
 				<div class="row justify-content-center align-items-center">
 					<div class="col-sm-2 my-4 text-center">
@@ -223,14 +223,14 @@
 		{% else %}
 			<div class="table-responsive mb-5">
 				<table class="table table-hover">
-				{% for book in books %}
+				{% for book in books['items'] %}
 					{% include '_bookentry.html' %}
 				{% endfor %}
 				</table>
 			</div>
 		{% endif %}
 	
-		{% for book in books %}
+		{% for book in books['items'] %}
 			{% include '_editmodal.html' %}
 	
 			{% include '_loanmodal.html' %}
@@ -243,18 +243,38 @@
 		
 			<nav aria-label="...">
 				<ul class="pagination justify-content-center">
-					<li class="page-item{% if not prev_url %} disabled{% endif %}">
-						<a class="page-link" href="{{ prev_url or '#' }}">
-							<i class="bi bi-arrow-left"></i> PREVIOUS BOOKS
+					<li class="page-item{% if not books['has_prev'] %} disabled{% endif %}">
+						<a class="page-link" href="{{ url_for(endpoint, page=books['prev_num'], **query_args) }}">
+							<span>&laquo;</span> PREVIOUS
 						</a>
 					</li>
-					<li class="page-item{% if not next_url %} disabled{% endif %}">
-						<a class="page-link" href="{{ next_url or '#' }}">
-							MORE BOOKS <i class="bi bi-arrow-right"></i>
+					{% for page in books['iter_pages'] %}
+						{% if page %}
+							{% if page != books['page'] %}
+							<li class="page-item">
+								<a class="page-link" href="{{ url_for(endpoint, page=page, **query_args) }}">
+									{{ page }}
+								</a>
+							</li>
+							{% else %}
+							<li class="page-item active">
+								<a class="page-link" href="#">
+									{{ page }}
+								</a>
+							</li>
+							{% endif %}
+						{% else %}
+							<span class=ellipsis>…</span>
+						{% endif %}
+					{% endfor %}
+					<li class="page-item{% if not books['has_next'] %} disabled{% endif %}">
+						<a class="page-link" href="{{ url_for(endpoint, page=books['next_num'], **query_args) }}">
+							NEXT <span>&raquo;</span>
 						</a>
 					</li>
 				</ul>
 			</nav>
+
 		</div>
 	</div>
 	

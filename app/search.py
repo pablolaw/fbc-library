@@ -95,7 +95,6 @@ class Search:
         """
         if self._fuzzy_query:
             books, _ = Book.search(self._fuzzy_query, page, per_page)
-            print(books)
         elif len(self._exact_query) > 0:
             books = Book.query
         else:

@@ -110,10 +110,19 @@ def before_request():
 @login_required
 def all_books():
 	page = request.args.get('page', 1, type=int)
-	books = Book.query.order_by(Book.full_title).paginate(page, app.config['BOOKS_PER_PAGE'], False)
+	books_pag = Book.query.order_by(Book.full_title).paginate(page, app.config['BOOKS_PER_PAGE'], False)
+	books = {
+		'items': books_pag.items,
+		'has_prev': books_pag.has_prev,
+		'prev_num': books_pag.prev_num,
+		'iter_pages': books_pag.iter_pages(),
+		'page': books_pag.page,
+		'has_next': books_pag.has_next,
+		'next_num': books_pag.next_num
+	}
 	num_books = Book.query.count()
-	next_url = url_for('all_books', page=books.next_num) if books.has_next else None
-	prev_url = url_for('all_books', page=books.prev_num) if books.has_prev else None
+	# next_url = url_for('all_books', page=books.next_num) if books.has_next else None
+	# prev_url = url_for('all_books', page=books.prev_num) if books.has_prev else None
 	form = EmptyForm()
 	loanees = Loanee.query.order_by(Loanee.name).all()
 	categories = Category.query.order_by(Category.name).all()
@@ -128,9 +137,11 @@ def all_books():
 		'form': form,
 		'title': 'Collection',
 		'num_books': num_books,
-		'books': books.items,
-		'next_url': next_url,
-		'prev_url': prev_url
+		'books': books,
+		'endpoint': 'all_books',
+		'query_args': {}
+		# 'next_url': next_url,
+		# 'prev_url': prev_url
 	}
 
 	return render_template('collection.html', **context)
@@ -294,9 +305,18 @@ def edit(book: Book) -> Any:
 @login_required
 def search_author(author_name):
 	page = request.args.get('page', 1, type=int)
-	books, total = Book.search_author(author_name, page, app.config['BOOKS_PER_PAGE'], exact=True)
-	next_url = url_for('search_author', author_name=author_name, page=page + 1) if total > page * app.config['BOOKS_PER_PAGE'] else None
-	prev_url = url_for('search_author', author_name=author_name, page=page - 1) if page > 1 else None
+	books_pag, total = Book.search_author(author_name, page, app.config['BOOKS_PER_PAGE'], exact=True)
+	books = {
+		'items': books_pag.items,
+		'has_prev': books_pag.has_prev,
+		'prev_num': books_pag.prev_num,
+		'iter_pages': books_pag.iter_pages(),
+		'page': books_pag.page,
+		'has_next': books_pag.has_next,
+		'next_num': books_pag.next_num
+	}
+	# next_url = url_for('search_author', author_name=author_name, page=page + 1) if total > page * app.config['BOOKS_PER_PAGE'] else None
+	# prev_url = url_for('search_author', author_name=author_name, page=page - 1) if page > 1 else None
 	form = EmptyForm()
 	loanees = Loanee.query.order_by(Loanee.name).all()
 	categories = Category.query.order_by(Category.name).all()
@@ -312,9 +332,9 @@ def search_author(author_name):
 		form=form, 
 		title='Search', 
 		num_books=total, 
-		books=books.items, 
-		next_url=next_url, 
-		prev_url=prev_url
+		books=books,
+		endpoint="search_author",
+		query_args={'author_name': author_name} 
 		)
 
 @app.route('/books/advanced', methods=['GET'])
@@ -328,18 +348,28 @@ def advanced_search():
 
 	page = request.args.get('page', 1, type=int)
 	builder = SearchBuilder()
-	books, total = builder.add_fuzzy_title(request.args.get('full_title')) \
+	books_pag, total = builder.add_fuzzy_title(request.args.get('full_title')) \
 	                      .add_fuzzy_author(request.args.get('authors')) \
 					      .add_category(request.args.get('category')) \
 					      .add_date(request.args.get('publish_date')) \
 					      .search().execute(page, app.config['BOOKS_PER_PAGE'])
 
+	books = {
+		'items': books_pag.items,
+		'has_prev': books_pag.has_prev,
+		'prev_num': books_pag.prev_num,
+		'iter_pages': books_pag.iter_pages(),
+		'page': books_pag.page,
+		'has_next': books_pag.has_next,
+		'next_num': books_pag.next_num
+	}
+
 	query_args = request.args.to_dict()
 	query_args.pop('page', 1)
 	query_args.pop('csrf_token', '')
 
-	next_url = url_for('advanced_search', page=page + 1, **query_args) if total > page * app.config['BOOKS_PER_PAGE'] else None
-	prev_url = url_for('advanced_search', page=page - 1, **query_args) if page > 1 else None
+	# next_url = url_for('advanced_search', page=page + 1, **query_args) if total > page * app.config['BOOKS_PER_PAGE'] else None
+	# prev_url = url_for('advanced_search', page=page - 1, **query_args) if page > 1 else None
 	form = EmptyForm()
 	loanees = Loanee.query.order_by(Loanee.name).all()
 	categories = Category.query.order_by(Category.name).all()
@@ -355,9 +385,9 @@ def advanced_search():
 		'search_query': builder.search_repr(),
 		'form':form,
 		'num_books':total,
-		'books':books.items,
-		'next_url':next_url,
-		'prev_url':prev_url,
+		'books':books,
+		'endpoint': "advanced_search",
+		'query_args': query_args
 	}
 	return render_template('collection.html', **context)
 
@@ -383,14 +413,24 @@ def search():
 		query = g.search_form.q.data
 
 	if search_type == 'Keyword':
-		books, total = Book.search_keyword(query, page, app.config['BOOKS_PER_PAGE'])
+		book_items, total = Book.search_keyword(query, page, app.config['BOOKS_PER_PAGE'])
 	elif search_type == 'Title':
-		books, total = Book.search_title(query, page, app.config['BOOKS_PER_PAGE'])
+		book_items, total = Book.search_title(query, page, app.config['BOOKS_PER_PAGE'])
 	else:
-		books, total = Book.search_author(query, page, app.config['BOOKS_PER_PAGE'])
+		book_items, total = Book.search_author(query, page, app.config['BOOKS_PER_PAGE'])
 
-	next_url = url_for('search', search_type=search_type, q=query, page=page + 1) if total > page * app.config['BOOKS_PER_PAGE'] else None
-	prev_url = url_for('search', search_type=search_type, q=query, page=page - 1) if page > 1 else None
+	books = {
+		'items': book_items,
+		'has_prev': page > 1,
+		'prev_num': page - 1,
+		'iter_pages': range(1, -(total // -2) + 1),
+		'page': page,
+		'has_next': total > page * app.config['BOOKS_PER_PAGE'],
+		'next_num': page + 1
+	}
+
+	# next_url = url_for('search', search_type=search_type, q=query, page=page + 1) if total > page * app.config['BOOKS_PER_PAGE'] else None
+	# prev_url = url_for('search', search_type=search_type, q=query, page=page - 1) if page > 1 else None
 	form = EmptyForm()
 	loanees = Loanee.query.order_by(Loanee.name).all()
 	categories = Category.query.order_by(Category.name).all()
@@ -407,9 +447,11 @@ def search():
 		form=form, 
 		title='Search', 
 		num_books=total, 
-		books=books.all(), 
-		next_url=next_url, 
-		prev_url=prev_url
+		books=books,
+		endpoint='search',
+		query_args={'search_type': search_type, 'query': query}
+		# next_url=next_url, 
+		# prev_url=prev_url
 		)
 
 @app.route('/loan/<int:book_id>', methods=['POST'])
