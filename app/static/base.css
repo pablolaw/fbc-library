@@ -132,6 +132,11 @@ a:hover {
 	font-size: 16px;
 }
 
+.page-item.active .page-link {
+	background-color: black;
+	border-color: black;
+}
+
 .action-header {
 	font-family: 'Montserrat', sans-serif; 
 	color: black; 

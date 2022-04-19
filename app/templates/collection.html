@@ -258,13 +258,17 @@
 							</li>
 							{% else %}
 							<li class="page-item active">
-								<a class="page-link" href="#">
+								<span class="page-link">
 									{{ page }}
-								</a>
+								</span>
 							</li>
 							{% endif %}
 						{% else %}
-							<span class=ellipsis>…</span>
+							<li class="page-item active">
+								<span class="page-link">
+									<span class=ellipsis>…</span>
+								</span>
+							</li>
 						{% endif %}
 					{% endfor %}
 					<li class="page-item{% if not books['has_next'] %} disabled{% endif %}">
