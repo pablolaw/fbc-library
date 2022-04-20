@@ -6,7 +6,7 @@ from flask import url_for
 from werkzeug.security import generate_password_hash, check_password_hash
 import urllib.request, json
 from urllib.error import HTTPError
-from elasticsearch_dsl import Document, Text, Search, Q
+from elasticsearch_dsl import Document, Object, Text, Search, Q
 from elasticsearch_dsl.query import MultiMatch, Match
 from elasticsearch import ElasticsearchException
 from sqlalchemy import extract
@@ -179,7 +179,6 @@ class Book(SearchableMixin, db.Model):
 		)
 
 	def get_document(self):
-		print(f"About to add document for indexing: {self._doc}")
 		return self._doc
 
 	@staticmethod

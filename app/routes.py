@@ -115,14 +115,12 @@ def all_books():
 		'items': books_pag.items,
 		'has_prev': books_pag.has_prev,
 		'prev_num': books_pag.prev_num,
-		'iter_pages': books_pag.iter_pages(),
+		'iter_pages': books_pag.iter_pages(right_current=2),
 		'page': books_pag.page,
 		'has_next': books_pag.has_next,
 		'next_num': books_pag.next_num
 	}
 	num_books = Book.query.count()
-	# next_url = url_for('all_books', page=books.next_num) if books.has_next else None
-	# prev_url = url_for('all_books', page=books.prev_num) if books.has_prev else None
 	form = EmptyForm()
 	loanees = Loanee.query.order_by(Loanee.name).all()
 	categories = Category.query.order_by(Category.name).all()
@@ -140,8 +138,6 @@ def all_books():
 		'books': books,
 		'endpoint': 'all_books',
 		'query_args': {}
-		# 'next_url': next_url,
-		# 'prev_url': prev_url
 	}
 
 	return render_template('collection.html', **context)
@@ -315,8 +311,7 @@ def search_author(author_name):
 		'has_next': books_pag.has_next,
 		'next_num': books_pag.next_num
 	}
-	# next_url = url_for('search_author', author_name=author_name, page=page + 1) if total > page * app.config['BOOKS_PER_PAGE'] else None
-	# prev_url = url_for('search_author', author_name=author_name, page=page - 1) if page > 1 else None
+
 	form = EmptyForm()
 	loanees = Loanee.query.order_by(Loanee.name).all()
 	categories = Category.query.order_by(Category.name).all()
@@ -368,8 +363,6 @@ def advanced_search():
 	query_args.pop('page', 1)
 	query_args.pop('csrf_token', '')
 
-	# next_url = url_for('advanced_search', page=page + 1, **query_args) if total > page * app.config['BOOKS_PER_PAGE'] else None
-	# prev_url = url_for('advanced_search', page=page - 1, **query_args) if page > 1 else None
 	form = EmptyForm()
 	loanees = Loanee.query.order_by(Loanee.name).all()
 	categories = Category.query.order_by(Category.name).all()
@@ -429,8 +422,6 @@ def search():
 		'next_num': page + 1
 	}
 
-	# next_url = url_for('search', search_type=search_type, q=query, page=page + 1) if total > page * app.config['BOOKS_PER_PAGE'] else None
-	# prev_url = url_for('search', search_type=search_type, q=query, page=page - 1) if page > 1 else None
 	form = EmptyForm()
 	loanees = Loanee.query.order_by(Loanee.name).all()
 	categories = Category.query.order_by(Category.name).all()
